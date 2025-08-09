@@ -3,15 +3,36 @@ import type { FormProps } from 'antd';
 import { Button, Checkbox, Form, Input,Space } from 'antd';
 import loginStyle from './index.module.scss'
 import title from '../../assets/img/title.jpeg';
+import type { AppDispatch  } from '../../store'
+// 获取redux中的方法
+import { useDispatch, useSelector } from 'react-redux';
+import { getUserbyloginApi } from '../../store/slices/loginSlice';
 
 type FieldType = {
   username?: string;
   password?: string;
   remember?: string;
 };
-const Login:React.FC = () => {
+const Login:React.FC = (props) => {
+  interface IUserCallbackMes {
+    username?: string,
+    token?: string,
+    role?: string,
+    homeRouteList?: object[],
+  };
+  type RStatus = 'init' | 'loading' | 'fulfilled' | 'rejected';
+  const dispatch = useDispatch<AppDispatch>()
+  // const { datas, status, error } = useSelector((state:{user: { 
+  //   datas: IUserCallbackMes | undefined;
+  //   status: RStatus;
+  //   error: string | null
+  // }}) => state.user);
+  // console.log('fdsdfsdfsdf--------', datas, status, error);
+  
+  
   const onFinish: FormProps<FieldType>['onFinish'] = (values) => {
-  console.log('Success:', values);
+    const { username, password } = values
+    dispatch(getUserbyloginApi({ username, password}))
 };
 
 const onFinishFailed: FormProps<FieldType>['onFinishFailed'] = (errorInfo) => {
