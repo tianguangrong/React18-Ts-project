@@ -134,10 +134,7 @@ Mock.mock('https://www.demo.com/api/get-device-sumary', 'get', () => {
     }
 })
 Mock.mock('https://www.demo.com/api/login', 'post', (options: any) => {
-  
   const { username, password } = JSON.parse(options.body);
-  console.log('options', username, password);
-  debugger
   if (username === 'admin' && password === 'admin123.') {
     return {
       code: 200,

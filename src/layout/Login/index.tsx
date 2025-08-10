@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import type { FormProps } from 'antd';
 import { Button, Checkbox, Form, Input,Space } from 'antd';
 import loginStyle from './index.module.scss'
@@ -6,8 +6,8 @@ import title from '../../assets/img/title.jpeg';
 import type { AppDispatch  } from '../../store'
 // 获取redux中的方法
 import { useDispatch, useSelector } from 'react-redux';
-import { getUserbyloginApi } from '../../store/slices/loginSlice';
-
+import { fetchUser } from '../../store/slices/loginSlice';
+import { useNavigate } from 'react-router-dom';
 type FieldType = {
   username?: string;
   password?: string;
@@ -20,19 +20,23 @@ const Login:React.FC = (props) => {
     role?: string,
     homeRouteList?: object[],
   };
-  type RStatus = 'init' | 'loading' | 'fulfilled' | 'rejected';
+  type fetchStatus = 'init' | 'loading' | 'fulfilled' | 'rejected';
   const dispatch = useDispatch<AppDispatch>()
+  const [ curStatus, setCurStatus ] = useState('init')
   // const { datas, status, error } = useSelector((state:{user: { 
   //   datas: IUserCallbackMes | undefined;
-  //   status: RStatus;
+  //   status: fetchStatus;
   //   error: string | null
   // }}) => state.user);
-  // console.log('fdsdfsdfsdf--------', datas, status, error);
-  
-  
-  const onFinish: FormProps<FieldType>['onFinish'] = (values) => {
+  // setCurStatus(status)
+  const navigate = useNavigate()
+  const onFinish: FormProps<FieldType>['onFinish'] = async (values) => {
     const { username, password } = values
-    dispatch(getUserbyloginApi({ username, password}))
+    const { payload: { token: myLoginToken }} = await dispatch(fetchUser({ username, password}));
+    if (myLoginToken) {
+      navigate('/home', { replace: true });
+    }
+    console.log('fdsdfsdfsdf--------', myLoginToken);
 };
 
 const onFinishFailed: FormProps<FieldType>['onFinishFailed'] = (errorInfo) => {
