@@ -35,10 +35,8 @@ export const fetchUser = createAsyncThunk(
     username?: string;
     password?: string;
   }, { rejectWithValue }) => {
-    console.log('================', datas);
     try {
       const result = await axios.post('https://www.demo.com/api/login', datas);
-      console.log('Success:', result.data);
       return result.data.data
     } catch (error: any) {
       rejectWithValue(error.message  || '获取用户失败')
@@ -77,7 +75,5 @@ const userSlice = createSlice({
       })
   }
 });
-console.log('我创建的userSlice--->', userSlice);
-
 export const { clearUser } = userSlice.actions;
 export default userSlice.reducer

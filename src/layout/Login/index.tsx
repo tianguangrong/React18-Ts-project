@@ -22,8 +22,8 @@ const Login:React.FC = (props) => {
   };
   type fetchStatus = 'init' | 'loading' | 'fulfilled' | 'rejected';
   const dispatch = useDispatch<AppDispatch>()
-  const [ curStatus, setCurStatus ] = useState('init')
-  // const { datas, status, error } = useSelector((state:{user: { 
+  // const [ curStatus, setCurStatus ] = useState('init')
+  // const { datas, status, error } = useSelector((state:{ user: { 
   //   datas: IUserCallbackMes | undefined;
   //   status: fetchStatus;
   //   error: string | null
@@ -32,11 +32,12 @@ const Login:React.FC = (props) => {
   const navigate = useNavigate()
   const onFinish: FormProps<FieldType>['onFinish'] = async (values) => {
     const { username, password } = values
-    const { payload: { token: myLoginToken }} = await dispatch(fetchUser({ username, password}));
-    if (myLoginToken) {
-      navigate('/home', { replace: true });
-    }
-    console.log('fdsdfsdfsdf--------', myLoginToken);
+    await dispatch(fetchUser({ username, password}))
+    // const { payload: { token: myLoginToken }} = await dispatch(fetchUser({ username, password}));
+    // if (myLoginToken) {
+    //   navigate('/home', { replace: true });
+    // }
+    // console.log('fdsdfsdfsdf--------', myLoginToken);
 };
 
 const onFinishFailed: FormProps<FieldType>['onFinishFailed'] = (errorInfo) => {

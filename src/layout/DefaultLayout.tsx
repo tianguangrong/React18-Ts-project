@@ -1,21 +1,24 @@
 import React from 'react'
-import { Navigate, Outlet } from 'react-router-dom';
-import { useSelector } from 'react-redux';
-
+import { Layout } from 'antd';
+import dltStyle from  './DefaultLayout.module.scss';
+import MenuComent from '../component/MenuContent';
+import HeaderContent from '../component/HeaderContent';
+import MainContent from '../component/MainContent';
+import FooterContent from '../component/FooterContent'
 export default function DefaultLayout() {
-  const { datas, status } = useSelector((state:any) => state.user);
-  const { token } = datas || {};
-  console.log('log', datas);
-  const PriviteRoute = () => {
-    if (token) {
-      return <Outlet/>;
-    }
-    return <Navigate to={'/'}/>
-  }
   return (
-    <div>
-      defaultLayout pages
-      <PriviteRoute />
+    <div className={dltStyle['default-layout-content']}>
+      <Layout style={{
+        width: '100%',
+        height: '100%'
+      }}>
+        <MenuComent />
+        <Layout>
+          <HeaderContent />
+          <MainContent />
+          <FooterContent/>
+        </Layout>
+      </Layout>
     </div>
   )
 }

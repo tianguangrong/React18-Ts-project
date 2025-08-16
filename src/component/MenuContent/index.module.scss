@@ -1,0 +1,10 @@
+.demo-logo-vertical {
+    width: 100%;
+    height: 64px;
+    padding: 12px;
+    &>div {
+        background-color: rgb(75, 80, 84);
+        width: 100%;
+        height: 100%;
+    }
+}
