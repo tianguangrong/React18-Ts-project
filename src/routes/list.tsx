@@ -79,7 +79,7 @@ const routeList = [
                 
             },
             { 
-                path:'operations/detal',
+                path:'operations/detail',
                 element:<Detail />,
                 icon:<HddTwoTone />
             },
