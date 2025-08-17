@@ -5,10 +5,11 @@ import menuStyle from './index.module.scss'
 const { Header, Content, Footer, Sider } = Layout;
 import classNames from 'classnames';
 import { type SetStateAction } from 'react';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import type { IUserType } from '../../types';
 import { useLocation, useNavigate } from 'react-router-dom';
 import routeList from '../../routes/list';
+import { updateCurrentActivePathname } from '../../store/slices/navSlice';
 
 const resetRouterList = (list: any[], flag?: boolean): object[] => {
   const originList = routeList && routeList[1].children || []
@@ -37,11 +38,17 @@ const resetRouterList = (list: any[], flag?: boolean): object[] => {
 }
 function MenuComent() {
   const {datas = {}} = useSelector((state:IUserType) => state.user);
+   const {activePathname} = useSelector((state:{
+      nav: {
+        activePathname:string
+      }
+    }) => state.nav)
   const [ routerList, setRouterList ] = useState<SetStateAction<any> | null>(null);
   const { pathname } = useLocation();
   const [ activePath, setActivePath ] = useState('')
   const [isPending, startTransition ] = useTransition()
   const navigate = useNavigate()
+  const dispatch = useDispatch()
   useEffect(() => {
     if (datas) {
       const { homeRouteList = [] } = datas;
@@ -53,6 +60,7 @@ function MenuComent() {
       console.log('newRouterList ------', newRouterList);
       
       setActivePath(currentActivePathname);
+      dispatch(updateCurrentActivePathname(currentActivePathname))
     }
   }, [])
   const handleSelect = (keys: any) => {

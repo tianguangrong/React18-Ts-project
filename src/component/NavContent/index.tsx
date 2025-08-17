@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { Button, Tabs } from 'antd';
-
+import { useSelector } from 'react-redux';
 type TargetKey = React.MouseEvent | React.KeyboardEvent | string;
 const defaultPanes = Array.from({ length: 2 }).map((_, index) => {
   const id = String(index + 1);
@@ -8,6 +8,11 @@ const defaultPanes = Array.from({ length: 2 }).map((_, index) => {
   return { label: `Tab ${id}`,  key: id };
 });
 const NavContent: React.FC = () => {
+  // const {activePathname} = useSelector((state:{
+  //   nav: {
+  //     activePathname:string
+  //   }
+  // }) => state.nav)
   const [items, setItems] = useState(defaultPanes);
   const [activeKey, setActiveKey] = useState(defaultPanes[0].key);
   const onChange = () => {
