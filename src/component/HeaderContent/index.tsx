@@ -9,7 +9,7 @@ import { BellOutlined } from '@ant-design/icons';
 import { DownOutlined } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 import { useSelector, useDispatch } from 'react-redux';
-// import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import  type {IUserType} from '../../types';
 import { clearUser } from '../../store/slices/loginSlice'
 
@@ -27,7 +27,7 @@ const HeaderContent: React.FC = () => {
     const [ username, setUsername ]   = useState('')
     const { datas = {} } = useSelector((state:IUserType) => state.user);
     const dispatch  = useDispatch()
-    // const navigate = useNavigate()
+    const navigate = useNavigate()
     const {
         token: { colorBgContainer },
     } = theme.useToken();
@@ -35,6 +35,8 @@ const HeaderContent: React.FC = () => {
         if (+key === 2) {
             dispatch(clearUser(null));
             // navigate('/login', {replace: true})
+        } else {
+            navigate('personal', {replace: true})
         }
     };
     useEffect(() => {

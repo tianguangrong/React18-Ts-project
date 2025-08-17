@@ -1,18 +1,67 @@
-import React from 'react'
+import React, { useEffect, useState, useTransition } from 'react'
 import { UploadOutlined, UserOutlined, VideoCameraOutlined } from '@ant-design/icons';
-import { Layout, Menu, theme } from 'antd';
+import { Layout, Menu, theme, type MenuProps } from 'antd';
 import menuStyle from './index.module.scss'
 const { Header, Content, Footer, Sider } = Layout;
 import classNames from 'classnames';
+import { type SetStateAction } from 'react';
+import { useSelector } from 'react-redux';
+import type { IUserType } from '../../types';
+import { useLocation, useNavigate } from 'react-router-dom';
+import routeList from '../../routes/list';
 
-const items = [UserOutlined, VideoCameraOutlined, UploadOutlined, UserOutlined].map(
-  (icon, index) => ({
-    key: String(index + 1),
-    icon: React.createElement(icon),
-    label: `nav ${index + 1}`,
-  }),
-);
+const resetRouterList = (list: any[], flag?: boolean): object[] => {
+  const originList = routeList && routeList[1].children || []
+  console.log('originList', originList);
+  
+  const result = list.map((item: any) => {
+      const url = item.url.split('/')[1];
+     const targetRouterList = originList.map(item => {
+      if (item.path.includes(url)) {
+        return item
+      }
+     }).filter(Boolean)
+    
+      Object.assign(item, {
+        key: item.url,
+        label: item.name,
+        icon: flag && targetRouterList[0]?.icon
+      });
+      if (Object.prototype.hasOwnProperty.call(item, 'children')) {
+        resetRouterList(item.children, false)
+      }
+      return item;
+  })
+
+ return result
+}
 function MenuComent() {
+  const {datas = {}} = useSelector((state:IUserType) => state.user);
+  const [ routerList, setRouterList ] = useState<SetStateAction<any> | null>(null);
+  const { pathname } = useLocation();
+  const [ activePath, setActivePath ] = useState('')
+  const [isPending, startTransition ] = useTransition()
+  const navigate = useNavigate()
+  useEffect(() => {
+    if (datas) {
+      const { homeRouteList = [] } = datas;
+      const newRouterList = resetRouterList(structuredClone(homeRouteList), true)
+      startTransition(() => {
+        setRouterList(newRouterList)
+      });
+      const currentActivePathname = pathname.split('home')[1] + '' || '/dashboard';
+      console.log('newRouterList ------', newRouterList);
+      
+      setActivePath(currentActivePathname);
+    }
+  }, [])
+  const handleSelect = (keys: any) => {
+    const currentPath = keys.key.slice(1)
+    console.log(currentPath);
+    setActivePath(keys?.key);
+    navigate(currentPath);
+    
+  }
   return (
     <Sider
         breakpoint="lg"
@@ -25,9 +74,14 @@ function MenuComent() {
         }}
         >
     <div className={menuStyle['demo-logo-vertical']}>
-        <div></div>
+        <h2 className={menuStyle['logo-content']}>
+          <img className={menuStyle['logo']} src="http://www.sinopecgroup.com/r/cms/jtyw/default/images/indexfootlogo.png" alt="" />
+          中国石化</h2>
     </div>
-    <Menu theme="dark" mode="inline" defaultSelectedKeys={['4']} items={items} />
+    {
+      !isPending ? <Menu onSelect={handleSelect} theme="dark" mode="inline" defaultSelectedKeys={[activePath]} selectedKeys={[activePath]} items={routerList} /> : <div style={{color: 'white', padding: '0 12px'}}>Menu Loading...</div>
+    }
+    
     </Sider>
   )
 }
