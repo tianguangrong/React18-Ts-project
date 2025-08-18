@@ -12,3 +12,10 @@ export interface IUserType  {
         error: string | null
     }
 }
+export type Path = {
+  path: string,
+  label: string
+} 
+export interface NavStateType {
+   currentActivePath: Path
+}

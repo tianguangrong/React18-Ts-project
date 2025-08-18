@@ -1,16 +1,20 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-interface NavStateType {
-   activePathname: string 
-}
+import type { Path, NavStateType } from "../../types";
 const initialState:NavStateType = {
-    activePathname: '/dashboard'
+   currentActivePath: {
+    path: '/dashboard',
+    label: '数据看板'
+   } 
 }
 const navSlice = createSlice({
     name: 'nav',
     initialState: initialState,
     reducers: {
-        updateCurrentActivePathname(state, action: PayloadAction<string>) {
-            state.activePathname = action.payload;
+        updateCurrentActivePathname(state, action: PayloadAction<Path>) {
+          console.log('action.payload ------', action.payload);
+          const { path, label } = action.payload;
+          state.currentActivePath.path = path;
+          state.currentActivePath.label = label;
         }
     }
 })

@@ -5,6 +5,7 @@ import { Navigate } from "react-router-dom";
 import DefaultLayout from "../layout/DefaultLayout";
 import NotFound from "../layout/NotFound";
 import Login from "../layout/Login";
+import { LoginGuard } from "../utils/LoginGuard";
 const DashBoard = React.lazy(() => import('../views/DashBoard'));
 const PersonalCenter = React.lazy(() => import('../views/PersonalCenter'))
 const Monitor = React.lazy(() => import('../views/Monitor'))
@@ -18,7 +19,6 @@ const System = React.lazy(() => import('../views/System'))
 const Orders = React.lazy(() => import('../views/Orders'))
 const Detail = React.lazy(() => import('../views/Detail'))
 const Total = React.lazy(() => import('../views/Total'))
-import { useSelector } from "react-redux";
 import {
     FundTwoTone,
     ApiTwoTone,
@@ -31,16 +31,7 @@ import {
     SettingTwoTone
 } from '@ant-design/icons';
 // 创建登录守卫组建
-const LoginGuard = (props:any) => {
-    const { datas } = useSelector((state:any) => state.user);
-    const { token } = datas || {};
-    console.log('这是我在路由守卫里面查看的token', token);
-    const element: React.ReactNode = props.element
-    if (!token) {
-        return element
-    }
-    return <Navigate to={'/home'} replace/>
-};
+
 const routeList = [
     {
         path: '/login',

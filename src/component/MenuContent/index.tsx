@@ -1,17 +1,16 @@
 import React, { useEffect, useState, useTransition } from 'react'
-import { UploadOutlined, UserOutlined, VideoCameraOutlined } from '@ant-design/icons';
-import { Layout, Menu, theme, type MenuProps } from 'antd';
+import { Layout, Menu,  } from 'antd';
 import menuStyle from './index.module.scss'
-const { Header, Content, Footer, Sider } = Layout;
-import classNames from 'classnames';
+const { Sider } = Layout;
+// import classNames from 'classnames';
 import { type SetStateAction } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import type { IUserType } from '../../types';
+import type { IUserType, NavStateType } from '../../types';
 import { useLocation, useNavigate } from 'react-router-dom';
 import routeList from '../../routes/list';
 import { updateCurrentActivePathname } from '../../store/slices/navSlice';
 
-const resetRouterList = (list: any[], flag?: boolean): object[] => {
+const resetRouterList = (list: object[], flag?: boolean): object[] => {
   const originList = routeList && routeList[1].children || []
   console.log('originList', originList);
   
@@ -38,17 +37,28 @@ const resetRouterList = (list: any[], flag?: boolean): object[] => {
 }
 function MenuComent() {
   const {datas = {}} = useSelector((state:IUserType) => state.user);
-   const {activePathname} = useSelector((state:{
-      nav: {
-        activePathname:string
-      }
-    }) => state.nav)
+  //  const { currentActivePath } = useSelector((state:{
+  //     nav: NavStateType
+  //   }) => state.nav)
   const [ routerList, setRouterList ] = useState<SetStateAction<any> | null>(null);
   const { pathname } = useLocation();
+  
   const [ activePath, setActivePath ] = useState('')
   const [isPending, startTransition ] = useTransition()
   const navigate = useNavigate()
   const dispatch = useDispatch()
+  // 通过useLocation()获取当前路由对象
+  const findCurrentRouteObjectByuseLocation = (list: any[] = [], target: string = ''):any => {
+    for (const item of list) {
+      if (item.url === target) {
+        return item
+      }
+      if (item.children) {
+        const result = findCurrentRouteObjectByuseLocation(item.children, target);
+        if (result) return result
+      }
+    }
+  }
   useEffect(() => {
     if (datas) {
       const { homeRouteList = [] } = datas;
@@ -57,15 +67,18 @@ function MenuComent() {
         setRouterList(newRouterList)
       });
       const currentActivePathname = pathname.split('home')[1] + '' || '/dashboard';
-      console.log('newRouterList ------', newRouterList);
+      const curtPathObject = findCurrentRouteObjectByuseLocation(newRouterList, currentActivePathname)
+      
       
       setActivePath(currentActivePathname);
-      dispatch(updateCurrentActivePathname(currentActivePathname))
+      dispatch(updateCurrentActivePathname({path: curtPathObject.url, label: curtPathObject.name}))
     }
   }, [])
   const handleSelect = (keys: any) => {
     const currentPath = keys.key.slice(1)
-    console.log(currentPath);
+    const { homeRouteList = [] } = datas;
+    const curtPathObject = findCurrentRouteObjectByuseLocation(homeRouteList, keys.key)
+    dispatch(updateCurrentActivePathname({path: curtPathObject.url, label: curtPathObject.name}))
     setActivePath(keys?.key);
     navigate(currentPath);
     
