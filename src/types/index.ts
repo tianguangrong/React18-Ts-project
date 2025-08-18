@@ -17,5 +17,6 @@ export type Path = {
   label: string
 } 
 export interface NavStateType {
-   currentActivePath: Path
+   currentActivePath: Path;
+   navStacks: Path[]
 }

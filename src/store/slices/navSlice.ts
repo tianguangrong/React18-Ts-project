@@ -1,7 +1,8 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import type { Path, NavStateType } from "../../types";
 const initialState:NavStateType = {
-   currentActivePath: {
+  navStacks: [],
+  currentActivePath: {
     path: '/dashboard',
     label: '数据看板'
    } 
@@ -15,6 +16,11 @@ const navSlice = createSlice({
           const { path, label } = action.payload;
           state.currentActivePath.path = path;
           state.currentActivePath.label = label;
+        },
+        addToNavStack(state, action: PayloadAction<Path>) {
+          if (!state.navStacks?.some(nav => nav.path === action.payload.path)) {
+            state.navStacks = [...state.navStacks, action.payload]
+          };
         }
     }
 })
