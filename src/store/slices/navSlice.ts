@@ -24,5 +24,5 @@ const navSlice = createSlice({
         }
     }
 })
-export const { updateCurrentActivePathname } = navSlice.actions;
+export const { updateCurrentActivePathname, addToNavStack } = navSlice.actions;
 export default navSlice.reducer;

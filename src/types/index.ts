@@ -14,7 +14,8 @@ export interface IUserType  {
 }
 export type Path = {
   path: string,
-  label: string
+  label: string,
+  [key: string]:string
 } 
 export interface NavStateType {
    currentActivePath: Path;

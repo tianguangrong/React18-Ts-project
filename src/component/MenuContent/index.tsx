@@ -8,11 +8,10 @@ import { useSelector, useDispatch } from 'react-redux';
 import type { IUserType, NavStateType } from '../../types';
 import { useLocation, useNavigate } from 'react-router-dom';
 import routeList from '../../routes/list';
-import { updateCurrentActivePathname } from '../../store/slices/navSlice';
+import { updateCurrentActivePathname, addToNavStack } from '../../store/slices/navSlice';
 
 const resetRouterList = (list: object[], flag?: boolean): object[] => {
-  const originList = routeList && routeList[1].children || []
-  console.log('originList', originList);
+  const originList = routeList && routeList[1].children || [];
   
   const result = list.map((item: any) => {
       const url = item.url.split('/')[1];
@@ -72,6 +71,7 @@ function MenuComent() {
       
       setActivePath(currentActivePathname);
       dispatch(updateCurrentActivePathname({path: curtPathObject.url, label: curtPathObject.name}))
+      dispatch(addToNavStack({path: curtPathObject.url, label: curtPathObject.name}))
     }
   }, [])
   const handleSelect = (keys: any) => {
@@ -79,6 +79,7 @@ function MenuComent() {
     const { homeRouteList = [] } = datas;
     const curtPathObject = findCurrentRouteObjectByuseLocation(homeRouteList, keys.key)
     dispatch(updateCurrentActivePathname({path: curtPathObject.url, label: curtPathObject.name}))
+    dispatch(addToNavStack({path: curtPathObject.url, label: curtPathObject.name}))
     setActivePath(keys?.key);
     navigate(currentPath);
     
