@@ -9,10 +9,10 @@ import { createSlice, type PayloadAction, createAsyncThunk } from '@reduxjs/tool
 import axios from 'axios';
 const { localStorage }  = window
 interface IUserCallbackMes {
-    username?: string,
-    token?: string,
-    role?: string,
-    homeRouteList?: object[],
+    username: string,
+    token: string,
+    role: string,
+    homeRouteList: object[],
 };
 
 type fetchStatus = 'init' | 'loading' | 'fulfilled' | 'rejected';

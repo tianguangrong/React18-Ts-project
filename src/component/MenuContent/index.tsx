@@ -3,6 +3,7 @@ import { Layout, Menu,  } from 'antd';
 import menuStyle from './index.module.scss'
 const { Sider } = Layout;
 // import classNames from 'classnames';
+import { findCurrentRouteObjectByuseLocation } from '../../utils'
 import { type SetStateAction } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import type { IUserType, NavStateType } from '../../types';
@@ -47,17 +48,6 @@ function MenuComent() {
   const navigate = useNavigate()
   const dispatch = useDispatch()
   // 通过useLocation()获取当前路由对象
-  const findCurrentRouteObjectByuseLocation = (list: any[] = [], target: string = ''):any => {
-    for (const item of list) {
-      if (item.url === target) {
-        return item
-      }
-      if (item.children) {
-        const result = findCurrentRouteObjectByuseLocation(item.children, target);
-        if (result) return result
-      }
-    }
-  }
   useEffect(() => {
     if (datas) {
       const { homeRouteList = [] } = datas;
