@@ -38,7 +38,6 @@ const navSlice = createSlice({
             }
           } else {
             // 清空页签栈
-            debugger
             state.navStacks = []
           }
         }

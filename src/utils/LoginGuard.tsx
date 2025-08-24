@@ -9,5 +9,7 @@ export const LoginGuard = (props:any) => {
     if (!token) {
         return element
     }
+    console.log('kan-----kan------------');
+    
     return <Navigate to={'/home'} replace/>
 };

@@ -12,8 +12,9 @@ const NavContent: React.FC = () => {
   const navigate = useNavigate();
   const dispath = useDispatch();
   const [flag, setFlag ] = useState(false)
-  const { datas: { homeRouteList } = {} } = useSelector((state: IUserType) => state.user)
+  const { datas = {} } = useSelector((state: IUserType) => state.user)
   const { navStacks, currentActivePath } = useSelector((state:{nav: NavStateType}) => state.nav);
+  const homeRouteList = datas && datas.homeRouteList || []
   useEffect(() => {
     startTransition(() => {
       let navList: Array<{label: string, key: string}> | [] = []
