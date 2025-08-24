@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useTransition, useEffect, useState } from 'react';
 import { type SetStateAction } from 'react';
 import { Layout, theme } from 'antd';
 const { Header } = Layout;
@@ -10,8 +10,11 @@ import { DownOutlined } from '@ant-design/icons';
 import type { MenuProps } from 'antd';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import  type {IUserType} from '../../types';
-import { clearUser } from '../../store/slices/loginSlice'
+import  type {IUserType, Path} from '../../types';
+import { clearUser } from '../../store/slices/loginSlice';
+import { updateCurrentActivePathname , clearNavStacks, addToNavStack } from '../../store/slices/navSlice';
+import { findCurrentRouteObjectByuseLocation } from '../../utils';
+
 
 const items: MenuProps['items'] = [
   {
@@ -27,7 +30,8 @@ const HeaderContent: React.FC = () => {
     const [ username, setUsername ]   = useState('')
     const { datas = {} } = useSelector((state:IUserType) => state.user);
     const dispatch  = useDispatch()
-    const navigate = useNavigate()
+    const navigate = useNavigate();
+    const [ isPending, startTransition ] = useTransition();
     const {
         token: { colorBgContainer },
     } = theme.useToken();
@@ -35,8 +39,17 @@ const HeaderContent: React.FC = () => {
         if (+key === 2) {
             dispatch(clearUser(null));
             // navigate('/login', {replace: true})
+            dispatch(clearNavStacks(null))
         } else {
-            navigate('personal', {replace: true})
+            startTransition(() => {
+                const curPath = findCurrentRouteObjectByuseLocation(datas.homeRouteList, '/personal');
+                const preType = {path: curPath.url, label: curPath.name}
+                const updateTypeAction = updateCurrentActivePathname(preType);
+                const newAddNav = addToNavStack(preType)
+                dispatch(newAddNav);
+                dispatch(updateTypeAction);
+            })
+            navigate('personal', {replace: true});
         }
     };
     useEffect(() => {

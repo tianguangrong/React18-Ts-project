@@ -3,7 +3,7 @@ import React from 'react'
 const System = () => {
   return (
     <div>
-      
+      System
     </div>
   )
 }

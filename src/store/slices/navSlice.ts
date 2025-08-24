@@ -21,8 +21,28 @@ const navSlice = createSlice({
           if (!state.navStacks?.some(nav => nav.path === action.payload.path)) {
             state.navStacks = [...state.navStacks, action.payload]
           };
+        },
+        clearNavStacks(state, action: PayloadAction<Path | null>) {
+          if (action.payload) {
+            // 删除某个页签
+            const needRemovePathObj = action.payload;
+            if (state.navStacks.length <= 1) {
+              return
+            } else if (needRemovePathObj.path !== state.currentActivePath.path) {
+              state.navStacks = state.navStacks.filter(item => item.path !== needRemovePathObj.path)
+            } else if( needRemovePathObj.path === state.currentActivePath.path) {
+              const targeIndex = state.navStacks.findIndex(nav => nav.path === needRemovePathObj.path);
+              // console.log(targeIndex);
+              state.currentActivePath = state.navStacks[targeIndex - 1];
+              state.navStacks = state.navStacks.filter(item => item.path !== needRemovePathObj.path);
+            }
+          } else {
+            // 清空页签栈
+            debugger
+            state.navStacks = []
+          }
         }
     }
 })
-export const { updateCurrentActivePathname, addToNavStack } = navSlice.actions;
+export const { updateCurrentActivePathname, addToNavStack, clearNavStacks } = navSlice.actions;
 export default navSlice.reducer;

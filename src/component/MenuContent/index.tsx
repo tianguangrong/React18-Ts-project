@@ -37,9 +37,9 @@ const resetRouterList = (list: object[], flag?: boolean): object[] => {
 }
 function MenuComent() {
   const {datas = {}} = useSelector((state:IUserType) => state.user);
-  //  const { currentActivePath } = useSelector((state:{
-  //     nav: NavStateType
-  //   }) => state.nav)
+   const { currentActivePath } = useSelector((state:{
+      nav: NavStateType
+    }) => state.nav)
   const [ routerList, setRouterList ] = useState<SetStateAction<any> | null>(null);
   const { pathname } = useLocation();
   
@@ -64,6 +64,11 @@ function MenuComent() {
       dispatch(addToNavStack({path: curtPathObject.url, label: curtPathObject.name}))
     }
   }, [])
+  useEffect(() => {
+    if (currentActivePath.path) {
+      setActivePath(currentActivePath.path);
+    }
+  }, [currentActivePath])
   const handleSelect = (keys: any) => {
     const currentPath = keys.key.slice(1)
     const { homeRouteList = [] } = datas;
@@ -91,7 +96,15 @@ function MenuComent() {
           中国石化</h2>
     </div>
     {
-      !isPending ? <Menu onSelect={handleSelect} theme="dark" mode="inline" defaultSelectedKeys={[activePath]} selectedKeys={[activePath]} items={routerList} /> : <div style={{color: 'white', padding: '0 12px'}}>Menu Loading...</div>
+      !isPending ?
+      <Menu 
+        onSelect={handleSelect}
+        theme="dark"
+        mode="inline"
+        defaultSelectedKeys={[activePath]}
+        selectedKeys={[activePath]}
+        items={routerList} /> :
+      <div style={{color: 'white', padding: '0 12px'}}>Menu Loading...</div>
     }
     
     </Sider>
