@@ -6,7 +6,7 @@
  * 参二：处第一个对象，对象内部存在一个rejectWithValue函数，内部参数传递异常message
  */
 import { createSlice, type PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
+import { httpPost } from '../../utils/axios/index.tsx';
 const { localStorage }  = window
 interface IUserCallbackMes {
     username: string,
@@ -24,7 +24,7 @@ interface UseStatusType {
 const localInitUseDatasState = localStorage.getItem('user') || ""
 const localInitUseStatusState = localStorage.getItem('status') as fetchStatus;
 const initialState: UseStatusType = {
-  datas: localInitUseDatasState ? JSON.parse(localInitUseDatasState) : null,
+  datas: localInitUseDatasState && localInitUseDatasState !== 'undefined' ? JSON.parse(localInitUseDatasState) : null,
   status: localInitUseStatusState || 'init',
   error:  localInitUseDatasState ? localStorage.getItem('error') : null
 };
@@ -36,10 +36,11 @@ export const fetchUser = createAsyncThunk(
     password?: string;
   }, { rejectWithValue }) => {
     try {
-      const result = await axios.post('https://www.demo.com/api/login', datas);
-      return result.data.data
+      const { data } = await httpPost('/api/login', datas);
+      return data
     } catch (error: any) {
-      rejectWithValue(error.message  || '获取用户失败')
+      console.error(error)
+      rejectWithValue(error  || '获取用户失败')
     }
   }
 ) 

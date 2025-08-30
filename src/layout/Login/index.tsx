@@ -1,11 +1,11 @@
 import React, { useState } from 'react'
 import type { FormProps } from 'antd';
-import { Button, Checkbox, Form, Input,Space, notification } from 'antd';
+import { Button, Checkbox, Form, Input,Flex, notification, Col } from 'antd';
 import loginStyle from './index.module.scss'
 import title from '../../assets/img/title.jpeg';
 import type { AppDispatch  } from '../../store'
 // 获取redux中的方法
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { fetchUser } from '../../store/slices/loginSlice';
 import { useNavigate } from 'react-router-dom';
 type FieldType = {
@@ -21,16 +21,19 @@ const Login:React.FC = (props) => {
     homeRouteList?: object[],
   };
   type fetchStatus = 'init' | 'loading' | 'fulfilled' | 'rejected';
+  const { status }  = useSelector((state: any) => state.user)
   const dispatch = useDispatch<AppDispatch>()
   // setCurStatus(status)
   const navigate = useNavigate()
   const onFinish: FormProps<FieldType>['onFinish'] = async (values) => {
     const { username, password } = values
-    await dispatch(fetchUser({ username, password}))
-    notification['success']({
-      message: 'Success',
-      description: '登录成功！'
-    })
+    const { payload} = await dispatch(fetchUser({ username, password}))
+    if (payload?.token) {
+      notification['success']({
+        message: 'Success',
+        description: '登录成功！'
+      })
+    }
 };
 
 const onFinishFailed: FormProps<FieldType>['onFinishFailed'] = (errorInfo) => {
@@ -72,20 +75,16 @@ const onFinishFailed: FormProps<FieldType>['onFinishFailed'] = (errorInfo) => {
               <Input.Password />
             </Form.Item>
 
-            <Form.Item<FieldType> name="remember" valuePropName="checked" label={null}>
+            {/* <Form.Item<FieldType> name="remember" valuePropName="checked" label={null}>
               <Checkbox>Remember me</Checkbox>
-            </Form.Item>
+            </Form.Item> */}
 
-            <Form.Item label={null} className={loginStyle['form-submit-group']}>
-              <Space size={'middle'}>
-                <Button type="primary" htmlType="submit">
-                  登 录
-                </Button>
-                <Button htmlType="reset">
-                  重 置
-                </Button>
-              </Space>
-            </Form.Item>
+            <div  className={loginStyle['form-submit-group']}>
+              <Flex vertical gap="small" style={{ width: '98%' }}>
+                <Button type="primary" htmlType="submit" block>{status === 'loading' ? '登录中 ...' : '登录'}</Button>
+                <Button htmlType="reset" block>重 置</Button>
+              </Flex>
+            </div>
           </Form>
         </div>
       </div>
