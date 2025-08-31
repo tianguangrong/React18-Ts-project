@@ -1,0 +1,14 @@
+.income-item {
+    display: flex;
+    font-size: 14px;
+    margin: 4px 0;
+    .item {
+        margin: 0 12px;
+    }
+    .item:first-child {
+        width: 30px;
+    }
+}
+.income-item:nth-of-type(even) {
+    background: #e3ebf5;
+}

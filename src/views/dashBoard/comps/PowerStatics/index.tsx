@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import style from './index.module.scss'
 import * as echarts from 'echarts';
 import {httpGet} from '../../../../utils/axios';
+import { Spin } from 'antd'
 const PowerStatics = () => {
     let option = {
         tooltip: {
@@ -45,9 +46,13 @@ const PowerStatics = () => {
         }
         ]
     };
-    const [data, setData] = useState(null)
+    const [data, setData] = useState(null);
+    const [loading, setLoading ] = useState(false)
     const fetchDatas = async () => {
-        const {code, data, message} = await httpGet('/api/get-power-static') as any;
+        setLoading(true)
+        const {code, data, message} = await httpGet('/api/get-power-static').finally(() => {
+            setLoading(false)
+        }) as any;
         if (code === 200) {
             setData(data)
             initChart(data)
@@ -76,9 +81,10 @@ const PowerStatics = () => {
         return chartInstance?.dispose()
     }, [])
     return (
-        <div className={style['power-echarts-box']} ref={echartRef}>
-        11
-        </div>
+        <Spin spinning={loading}>
+            <div className={style['power-echarts-box']} ref={echartRef}>
+            </div>
+        </Spin>
     )
 }
 

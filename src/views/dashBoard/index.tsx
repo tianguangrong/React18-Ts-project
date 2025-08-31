@@ -10,7 +10,9 @@ import total from '../../assets/img/total.png';
 import money from '../../assets/img/money.png';
 import remain from '../../assets/img/remain.png';
 import PowerStatics from './comps/PowerStatics';
-import OverviewPie from './comps/OverviewPie'
+import OverviewPie from './comps/OverviewPie';
+import IncomeStatics from './comps/IncomeStatics';
+import FaultAlarm from './comps/FaultAlarm';
 
 
 
@@ -69,8 +71,10 @@ const dashBoard: React.FC = () => {
             <OverviewPie/>
           </Card>
           <Card title="营收统计" className={dashBstyle['income-statics']}>
+            <IncomeStatics/>
           </Card>
           <Card title="故障报警" className={dashBstyle['fault-alarm']}>
+            <FaultAlarm/>
           </Card>
         </Flex>
       </Flex>
