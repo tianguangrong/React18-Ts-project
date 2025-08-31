@@ -27,7 +27,7 @@ const useRequestApi = (url: string , params: any, type: 'get' | 'post') => {
 export function httpPost(url: string, datas:any) {
   return createServer.post(url, datas)
 }
-export function httpGet(url: string, params:any) {
+export function httpGet(url: string, params?:any) {
   return createServer.get(url, {
     params: params,
   })

@@ -70,6 +70,7 @@ const HeaderContent: React.FC = () => {
                         <Dropdown menu={{ items, onClick }}>
                             <a onClick={(e) => e.preventDefault()}>
                             <Space>
+                                <img style={{width: '28px', height: '30px', position:'relative', top: '4px'}} src="https://api.dicebear.com/7.x/miniavs/svg?seed=8" alt="" />
                                 <span>欢迎你</span>, 
                                 <span>{ username }</span>
                                 <DownOutlined />
