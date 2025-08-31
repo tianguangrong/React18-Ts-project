@@ -47,7 +47,7 @@ const dashBoard: React.FC = () => {
   return (
       <Flex gap="middle" align="start" className={classNames(dashBstyle['dashboard-container'])}>
         <Flex className={classNames(dashBstyle['left-content'])} vertical gap={'middle'}>
-          <Card title="今日设备运行状态" className={dashBstyle['run-status-box']}>
+          <Card  title="今日设备运行状态" className={dashBstyle['run-status-box']}>
               <RunStatus/>
           </Card>
           <Card title="设备功能总览" className={classNames(dashBstyle['slice-box'])}>
@@ -62,7 +62,7 @@ const dashBoard: React.FC = () => {
               }
             </Flex>
           </Card>
-          <Card title="充电量统计" className={classNames(dashBstyle['charge-power-static-box'])}>
+          <Card hoverable title="充电量统计" className={classNames(dashBstyle['charge-power-static-box'])}>
               <PowerStatics/>
           </Card>
         </Flex>

@@ -6,7 +6,9 @@
         flex: 3.8;
         height: 100%;
         overflow-y: auto;
+            box-shadow: 0px 0px 12px rgba(0,0,0,0.12);
         .run-status-box {
+            box-shadow: 0px 0px 12px rgba(0,0,0,0.12);
             .first-card-meta {
                 :deep(.ant-card-meta-detail) {
                     color: red;
@@ -14,14 +16,23 @@
                 }
             }
         }
+        .slice-box {
+            box-shadow: 0px 0px 12px rgba(0,0,0,0.12);
+        }
         .charge-power-static-box {
+            box-shadow: 0px 0px 12px rgba(0,0,0,0.12);
             flex: 1;
         }
     }
     .right-content {
         flex: 1.2;
         height: 100%;
-        // background-color: gray;
         overflow-y: auto;
+        box-shadow: 0px 0px 12px rgba(0,0,0,0.12);
+        .overview-pie,
+        .income-statics,
+        .fault-alarm {
+            box-shadow: 0px 0px 12px rgba(0,0,0,0.12);
+        }
     }
 };
