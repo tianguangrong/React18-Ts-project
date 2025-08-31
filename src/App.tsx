@@ -5,6 +5,7 @@ import { useRoutes, BrowserRouter as Router } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import store from './store'
 import { Suspense } from 'react';
+import Fallback from './layout/Fallback';
 function App() {
   const RouteElement = () => {
     return useRoutes([...routeList])
@@ -12,7 +13,7 @@ function App() {
   return (
     <Provider store={store}>
       <Router>
-        <Suspense fallback={<div>Loading...</div>}>
+        <Suspense fallback={<Fallback/>}>
           <RouteElement />
         </Suspense>
       </Router>
