@@ -14,6 +14,7 @@ import  type {IUserType, Path} from '../../types';
 import { clearUser } from '../../store/slices/loginSlice';
 import { updateCurrentActivePathname , clearNavStacks, addToNavStack } from '../../store/slices/navSlice';
 import { findCurrentRouteObjectByuseLocation } from '../../utils';
+import ThemeSwitch from '../ThemeSwitch';
 
 
 const items: MenuProps['items'] = [
@@ -64,6 +65,10 @@ const HeaderContent: React.FC = () => {
                 <div className={headerStyle['h-space']}></div>
                 <div className={headerStyle['h-right']}>
                     <Space size={'middle'}>
+                        <Space>
+                            <span>主题切换：</span>
+                            <ThemeSwitch/>
+                        </Space>
                         <Badge dot>
                             <BellOutlined style={{ fontSize: 16 }}/>
                         </Badge>

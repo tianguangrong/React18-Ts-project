@@ -2,7 +2,7 @@ import React, { useEffect, useState, useTransition } from 'react'
 import { Layout, Menu,  } from 'antd';
 import menuStyle from './index.module.scss'
 const { Sider } = Layout;
-// import classNames from 'classnames';
+import classNames from 'classnames';
 import { findCurrentRouteObjectByuseLocation } from '../../utils'
 import { type SetStateAction } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
@@ -10,6 +10,7 @@ import type { IUserType, NavStateType } from '../../types';
 import { useLocation, useNavigate } from 'react-router-dom';
 import routeList from '../../routes/list';
 import { updateCurrentActivePathname, addToNavStack } from '../../store/slices/navSlice';
+import { UseTheme } from '../../utils/ThemeProvider';
 
 const resetRouterList = (list: object[], flag?: boolean): object[] => {
   const originList = routeList && routeList[1].children || [];
@@ -36,6 +37,7 @@ const resetRouterList = (list: object[], flag?: boolean): object[] => {
  return result
 }
 function MenuComent() {
+  const { theme } = UseTheme()
   const {datas = {}} = useSelector((state:IUserType) => state.user);
    const { currentActivePath } = useSelector((state:{
       nav: NavStateType
@@ -90,16 +92,17 @@ function MenuComent() {
             console.log(collapsed, type);
         }}
         >
-    <div className={menuStyle['demo-logo-vertical']}>
-        <h2 className={menuStyle['logo-content']}>
+    <div className={classNames(menuStyle['demo-logo-vertical'], menuStyle[`theme-${theme}`])}>
+        <h2 className={classNames(menuStyle['logo-content'])}>
           <img className={menuStyle['logo']} src="http://www.sinopecgroup.com/r/cms/jtyw/default/images/indexfootlogo.png" alt="" />
           中国石化</h2>
     </div>
     {
       !isPending ?
-      <Menu 
+      <Menu
+      style={{height: '100%'}}
         onSelect={handleSelect}
-        theme="dark"
+        theme={theme}
         mode="inline"
         defaultSelectedKeys={[activePath]}
         selectedKeys={[activePath]}
