@@ -57,7 +57,7 @@ function MenuComent() {
       startTransition(() => {
         setRouterList(newRouterList)
       });
-      const currentActivePathname = pathname.split('home')[1] + '' || '/dashboard';
+      const currentActivePathname = pathname.split('root')[1] + '' || '/dashboard';
       const curtPathObject = findCurrentRouteObjectByuseLocation(newRouterList, currentActivePathname)
       
       

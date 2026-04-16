@@ -11,7 +11,6 @@ type TargetKey = React.MouseEvent | React.KeyboardEvent | string;
 const NavContent: React.FC = () => {
   const navigate = useNavigate();
   const dispath = useDispatch();
-  const [flag, setFlag ] = useState(false)
   const { datas = {} } = useSelector((state: IUserType) => state.user)
   const { navStacks, currentActivePath } = useSelector((state:{nav: NavStateType}) => state.nav);
   const homeRouteList = datas && datas.homeRouteList || []
@@ -22,18 +21,15 @@ const NavContent: React.FC = () => {
         navList = [...navList!, {
           key: nav.path,
           label: nav.label
-        }]
-        console.log('currentActivePath 0000--->', currentActivePath);
+        }];
         setItems(navList);
-        setActiveKey(currentActivePath.path)
       });
     });
-  }, [navStacks, currentActivePath]);
+  }, [navStacks]);
   useEffect(() => {
-    if (flag) {
-      navigate(currentActivePath.path.slice(1));
-      setFlag(false)
-    }
+      const path = currentActivePath.path.slice(1)
+      setActiveKey(currentActivePath.path)
+      navigate(path);
   }, [currentActivePath])
   const [items, setItems] = useState<Array<{label: string, key: string}>| undefined >();
   const [activeKey, setActiveKey] = useState<string | undefined>();
@@ -47,7 +43,6 @@ const NavContent: React.FC = () => {
     if (action === 'remove') {
       const curPath = findCurrentRouteObjectByuseLocation(homeRouteList, targetPathUrl as string);
       dispath(clearNavStacks({path:curPath.url, label: curPath.name}));
-      setFlag(true)
     }
   }
   return (

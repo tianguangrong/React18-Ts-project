@@ -11,5 +11,5 @@ export const LoginGuard = (props:any) => {
     }
     console.log('kan-----kan------------');
     
-    return <Navigate to={'/home'} replace/>
+    return <Navigate to={'/root'} replace/>
 };

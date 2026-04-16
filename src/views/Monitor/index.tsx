@@ -1,221 +1,348 @@
-import { Flex, Space, Input, Select,Card,Col, Row, Button, Statistic, Table, Tag  } from 'antd'
-import React, { Component } from 'react';
-import style from './index.module.scss';
-import type { TableProps } from 'antd';
-
-import { SearchOutlined, PlusOutlined } from '@ant-design/icons';
+import {
+  Flex,
+  Space,
+  Input,
+  Select,
+  Card,
+  Col,
+  Row,
+  Button,
+  Statistic,
+  Table,
+} from "antd";
+import React, { Component } from "react";
+import style from "./index.module.scss";
+import type { TableProps } from "antd";
+import { httpGet, httpPost } from "@utils/axios";
+import { SearchOutlined, PlusOutlined } from "@ant-design/icons";
 interface DataType {
-  key: string;
+  key: React.Key;
+  id?: string;
+  index: number;
   name: string;
-  age: number;
-  address: string;
-  tags: string[];
+  city: string;
+  fast: number | null;
+  slow: number | null;
+  status: number | null;
+  now: number | null;
+  fault: number | null;
+  person: string;
+  tel: string | null;
+  opera?: any;
 }
-const columns: TableProps<DataType>['columns'] = [
+const columns: TableProps<DataType>["columns"] = [
   {
-    title: 'Name',
-    dataIndex: 'name',
-    key: 'name',
+    title: "序号",
+    dataIndex: "index",
+    key: "index",
     render: (text) => <a>{text}</a>,
   },
   {
-    title: 'Age',
-    dataIndex: 'age',
-    key: 'age',
+    title: "站点名称",
+    dataIndex: "name",
+    key: "name",
   },
   {
-    title: 'Address',
-    dataIndex: 'address',
-    key: 'address',
+    title: "站点ID",
+    dataIndex: "id",
+    key: "id",
+  },
+
+  {
+    title: "所属城市",
+    dataIndex: "city",
+    key: "city",
   },
   {
-    title: 'Tags',
-    key: 'tags',
-    dataIndex: 'tags',
-    render: (_, { tags }) => (
-      <>
-        {tags.map((tag) => {
-          let color = tag.length > 5 ? 'geekblue' : 'green';
-          if (tag === 'loser') {
-            color = 'volcano';
-          }
-          return (
-            <Tag color={color} key={tag}>
-              {tag.toUpperCase()}
-            </Tag>
-          );
-        })}
-      </>
+    title: "快充数",
+    dataIndex: "fast",
+    key: "fast",
+  },
+  {
+    title: "慢充数",
+    dataIndex: "slow",
+    key: "slow",
+  },
+  {
+    title: "状态",
+    key: "status",
+    dataIndex: "status",
+    render: (_, { status }) => (
+      <>{status && +status === 1 ? "使用中" : "未使用"}</>
     ),
   },
   {
-    title: 'Action',
-    key: 'action',
+    title: "正在充电数",
+    dataIndex: "now",
+    key: "now",
+  },
+  {
+    title: "故障数",
+    dataIndex: "slow",
+    key: "slow",
+  },
+  {
+    title: "责任人",
+    dataIndex: "person",
+    key: "person",
+  },
+  {
+    title: "责任人电话",
+    dataIndex: "tel",
+    key: "tel",
+  },
+
+  {
+    title: "操作",
+    key: "opera",
     render: (_, record) => (
       <Space size="middle">
-        <a>Invite {record.name}</a>
-        <a>Delete</a>
+        <Button type="primary">编辑</Button>
+        <Button>删除</Button>
       </Space>
     ),
   },
 ];
-const data: DataType[] = [
-  {
-    key: '1',
-    name: 'John Brown',
-    age: 32,
-    address: 'New York No. 1 Lake Park',
-    tags: ['nice', 'developer'],
-  },
-  {
-    key: '2',
-    name: 'Jim Green',
-    age: 42,
-    address: 'London No. 1 Lake Park',
-    tags: ['loser'],
-  },
-  {
-    key: '3',
-    name: 'Joe Black',
-    age: 32,
-    address: 'Sydney No. 1 Lake Park',
-    tags: ['cool', 'teacher'],
-  },
-];
+
 export default class Monitor extends Component {
   // options:Array<any> = []
   state: {
-    inputSelectType: string,
-    inputValue: string,
-    monitorStatus: null | number
-  }
-  constructor(props:any) {
-    super(props)
+    inputSelectType: string;
+    inputValue: string;
+    monitorStatus: null | number;
+    pagination: {
+      pageNum: number;
+      pageSize: number;
+      total: number;
+    };
+    datas: DataType[];
+  };
+  constructor(props: any) {
+    super(props);
     this.state = {
-      inputSelectType: 'id',
-      inputValue: '',
-      monitorStatus: null
-    }
+      inputSelectType: "id",
+      inputValue: "",
+      monitorStatus: null,
+      pagination: {
+        pageNum: 1,
+        pageSize: 10,
+        total: 0,
+      },
+      datas: [],
+    };
   }
   onChangeSelectClicker = (value: any) => {
     const state = {
       ...this.state,
       inputSelectType: value,
-      inputValue: ''
+      inputValue: "",
     };
     this.setState(state);
-  }
+  };
   inputChangeClicker = (value: string) => {
     this.setState({
       ...this.state,
-      inputValue: value
-    })
-    console.log('value', this.state.inputValue);
-  }
+      inputValue: value,
+    });
+    console.log("value", this.state.inputValue);
+  };
   handleMonitorStatusChangeClicker = (value: number) => {
-    console.log('value3', value);
+    console.log("value3", value);
     this.setState({
       ...this.state,
-      monitorStatus: value
-    })
-  }
+      monitorStatus: value,
+    });
+  };
   reset() {
     this.setState({
       ...this.state,
-      inputSelectType: 'id',
-      inputValue: '',
-      monitorStatus: null
+      inputSelectType: "id",
+      inputValue: "",
+      monitorStatus: null,
     });
   }
-  tableOnChange = (pagination: any) => {
-    console.log(pagination);
-    
+  pageOnChange = (pageNum: number, pageSize: number) => {
+    console.log("pagination", pageNum, pageSize);
+    const pagination = this.state.pagination;
+    this.setState(
+      {
+        pagination: {
+          ...pagination,
+          pageNum,
+          pageSize,
+        },
+      },
+      () => {
+        this.getMonitorDatas();
+      }
+    );
+  };
+  getMonitorDatas = async (): Promise<void> => {
+    const { inputSelectType, inputValue } = this.state;
+    const pagination = this.state.pagination;
+    const datas = {
+      pageSize: pagination.pageSize,
+      page: pagination.pageNum,
+      id: inputSelectType === "id" ? inputValue.trim() : null,
+      name: inputSelectType === "name" ? inputValue.trim() : null,
+      status: "",
+    };
+    try {
+      const {
+        code,
+        data: { list = [], total: resTotal = 0 },
+      } = await httpPost("/api/stationList", datas);
+      if (Object.is(code, 200)) {
+        const datas =
+          list?.map<DataType>((item: any, index: number) => {
+            return {
+              ...item,
+              key: index,
+              index: +index + 1,
+            };
+          }) ?? [];
+        const { pageNum, pageSize } = this.state.pagination;
+        console.log("datas", datas, resTotal);
+        this.setState({
+          datas,
+          pagination: {
+            total: resTotal,
+            pageNum,
+            pageSize,
+          },
+        });
+      }
+    } catch (error) {
+      console.log("error", error);
+    }
+  };
+  componentDidMount(): void {
+    this.getMonitorDatas();
   }
   render() {
-    const boxShadow = {boxShadow: '0px 0px 12px rgba(0, 0, 0, 0.12)'};
-    const { inputSelectType, inputValue, monitorStatus } = this.state
+    const boxShadow = { boxShadow: "0px 0px 12px rgba(0, 0, 0, 0.12)" };
+    const { inputSelectType, inputValue, monitorStatus, datas, pagination } =
+      this.state;
+    console.log("pagination", pagination);
+
+    const cardPadding = {
+      body: {
+        padding: "6px 12px",
+      },
+    };
     return (
-      <div className={style['monitor-container']}>
-        <Flex vertical gap="small" style={{height: '100%'}}>
-          <Card style={boxShadow}>
+      <div className={style["monitor-container"]}>
+        <Flex vertical gap="small" style={{ height: "100%" }}>
+          <Card style={boxShadow} styles={cardPadding}>
             <Row gutter={16}>
               <Col span={8}>
-                <Flex style={{flex: '1'}}>
-                  <Input value={inputValue} onChange={(e) => this.inputChangeClicker(e.target.value)} placeholder={`请根据${inputSelectType === 'name' ? '名称': 'ID'}查询数据`} />
+                <Flex style={{ flex: "1" }}>
+                  <Input
+                    value={inputValue}
+                    onChange={(e) => this.inputChangeClicker(e.target.value)}
+                    placeholder={`请根据${
+                      inputSelectType === "name" ? "名称" : "ID"
+                    }查询数据`}
+                  />
                   <Select
                     value={inputSelectType}
                     onChange={(e) => this.onChangeSelectClicker(e)}
                     options={[
                       {
-                        value: 'id',
-                        label: '按照ID查询',
+                        value: "id",
+                        label: "按照ID查询",
                       },
                       {
-                        value: 'name',
-                        label: '按名称查询',
+                        value: "name",
+                        label: "按名称查询",
                       },
-                    ]} />
+                    ]}
+                  />
                 </Flex>
-              </Col> 
-              
+              </Col>
+
               <Col span={8}>
-                <Flex style={{flex: '1'}}>
+                <Flex style={{ flex: "1" }}>
                   <Select
                     value={monitorStatus}
                     placeholder="请选择充电站监控状态"
-                    style={{ width: '100%' }}
+                    style={{ width: "100%" }}
                     onChange={this.handleMonitorStatusChangeClicker}
                     options={[
-                      { value: 1, label: '空闲中' },
-                      { value: 2, label: '使用中' },
-                      { value: 3, label: '待维修' },
-                      { value: 4, label: '维护中' },
+                      { value: 1, label: "空闲中" },
+                      { value: 2, label: "使用中" },
+                      { value: 3, label: "待维修" },
+                      { value: 4, label: "维护中" },
                     ]}
-                    />
+                  />
                 </Flex>
               </Col>
               <Col span={8}>
-                <Flex gap="small" style={{flex: '1',justifyContent: 'flex-end'}}>
-                  <Button type="primary" icon={<SearchOutlined></SearchOutlined>}>查 询</Button>
+                <Flex
+                  gap="small"
+                  style={{ flex: "1", justifyContent: "flex-end" }}
+                >
+                  <Button
+                    type="primary"
+                    icon={<SearchOutlined></SearchOutlined>}
+                  >
+                    查 询
+                  </Button>
                   <Button onClick={this.reset.bind(this)}>重 置</Button>
                 </Flex>
               </Col>
-                
             </Row>
           </Card>
-          <Card style={boxShadow}>
-            <Row gutter={16} justify="space-around">
+          <Card style={boxShadow} styles={cardPadding}>
+            <Row gutter={38} justify="space-around">
               <Col flex={1}>
                 <Statistic title="累计充电量(度)" value={112893} />
               </Col>
-              <Col flex={1} style={{textAlign: 'center'}}>
+              <Col flex={1} style={{ textAlign: "center" }}>
                 <Statistic title="累计充电次数(次)" value={89893} />
               </Col>
-              <Col flex={1} style={{textAlign: 'right'}}>
+              <Col flex={1} style={{ textAlign: "right" }}>
                 <Statistic title="服务区域(个)" value={193} />
               </Col>
             </Row>
           </Card>
-          
-          <Card style={boxShadow}>
+
+          <Card style={boxShadow} styles={cardPadding}>
             <Row gutter={16}>
               <Col span={24}>
-                  <Button type="primary"><PlusOutlined />新增充电站</Button>
+                <Button type="primary">
+                  <PlusOutlined />
+                  新增充电站
+                </Button>
               </Col>
             </Row>
           </Card>
-          <Card style={{
-            ...boxShadow,
-            height: '100%'
-          }}>
-              <Table<DataType> style={{width: '100%',flex: 1}}  onChange={this.tableOnChange} columns={columns} dataSource={data} />
+          <Card
+            style={{
+              ...boxShadow,
+              height: "100%",
+            }}
+            styles={cardPadding}
+          >
+            {/* 
+              onChange={this.tableOnChange} */}
+            <Table<DataType>
+              style={{ width: "100%", flex: 1 }}
+              columns={columns}
+              dataSource={datas}
+              pagination={{
+                current: pagination.pageNum,
+                pageSize: pagination.pageSize,
+                total: pagination.total,
+                onChange: this.pageOnChange,
+              }}
+            />
           </Card>
           {/* <Card style={boxShadow}>
             <Row gutter={16}>分页</Row>
           </Card> */}
         </Flex>
       </div>
-      
-    )
+    );
   }
 }

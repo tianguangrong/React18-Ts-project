@@ -38,7 +38,7 @@ const routeList = [
         element: <LoginGuard element={<Login />} />
     },
     {
-        path: '/home',
+        path: '/root',
         element: <DefaultLayout/>,
         children: [
             { 
