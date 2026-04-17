@@ -380,7 +380,7 @@ export default class Monitor extends Component {
             <Card
               style={{
                 ...boxShadow,
-                height: "100%",
+                height: 'auto',
               }}
               styles={cardPadding}
             >
