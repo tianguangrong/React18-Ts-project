@@ -14,6 +14,7 @@ import React, { Component } from "react";
 import style from "./index.module.scss";
 import type { TableProps } from "antd";
 import { httpGet, httpPost } from "@utils/axios";
+import EditMonitor from "./comps/editMonitor/index.tsx";
 import { SearchOutlined, PlusOutlined } from "@ant-design/icons";
 interface DataType {
   key: React.Key;
@@ -30,6 +31,12 @@ interface DataType {
   tel: string | null;
   opera?: any;
 }
+const statusOptions = [
+  { value: 1, label: "空闲中" },
+  { value: 2, label: "使用中" },
+  { value: 3, label: "待维修" },
+  { value: 4, label: "维护中" },
+];
 const columns: TableProps<DataType>["columns"] = [
   {
     title: "序号",
@@ -68,7 +75,11 @@ const columns: TableProps<DataType>["columns"] = [
     key: "status",
     dataIndex: "status",
     render: (_, { status }) => (
-      <>{status && +status === 1 ? "使用中" : "未使用"}</>
+      <>
+        {statusOptions.find((item) => item.value === status)?.label ?? (
+          <span style={{ color: "lightgray" }}>未知</span>
+        )}
+      </>
     ),
   },
   {
@@ -103,13 +114,14 @@ const columns: TableProps<DataType>["columns"] = [
     ),
   },
 ];
-
 export default class Monitor extends Component {
   // options:Array<any> = []
   state: {
     inputSelectType: string;
     inputValue: string;
     monitorStatus: null | number;
+    loading: boolean;
+    open: boolean,
     pagination: {
       pageNum: number;
       pageSize: number;
@@ -123,6 +135,8 @@ export default class Monitor extends Component {
       inputSelectType: "id",
       inputValue: "",
       monitorStatus: null,
+      loading: false,
+      open: false,
       pagination: {
         pageNum: 1,
         pageSize: 10,
@@ -174,20 +188,21 @@ export default class Monitor extends Component {
       },
       () => {
         this.getMonitorDatas();
-      }
+      },
     );
   };
   getMonitorDatas = async (): Promise<void> => {
-    const { inputSelectType, inputValue } = this.state;
+    const { inputSelectType, inputValue, monitorStatus } = this.state;
     const pagination = this.state.pagination;
     const datas = {
       pageSize: pagination.pageSize,
       page: pagination.pageNum,
       id: inputSelectType === "id" ? inputValue.trim() : null,
       name: inputSelectType === "name" ? inputValue.trim() : null,
-      status: "",
+      status: monitorStatus,
     };
     try {
+      this.setState({ loading: true });
       const {
         code,
         data: { list = [], total: resTotal = 0 },
@@ -211,18 +226,30 @@ export default class Monitor extends Component {
             pageSize,
           },
         });
+        this.setState({ loading: false });
       }
     } catch (error) {
+      this.setState({ loading: false });
       console.log("error", error);
     }
   };
   componentDidMount(): void {
     this.getMonitorDatas();
   }
+  openMonitorDrawerClicker = (flag: boolean) => {
+    debugger
+     this.setState({open: flag})
+  }
   render() {
     const boxShadow = { boxShadow: "0px 0px 12px rgba(0, 0, 0, 0.12)" };
-    const { inputSelectType, inputValue, monitorStatus, datas, pagination } =
-      this.state;
+    const {
+      inputSelectType,
+      inputValue,
+      monitorStatus,
+      datas,
+      pagination,
+      loading,
+    } = this.state;
     console.log("pagination", pagination);
 
     const cardPadding = {
@@ -231,118 +258,115 @@ export default class Monitor extends Component {
       },
     };
     return (
-      <div className={style["monitor-container"]}>
-        <Flex vertical gap="small" style={{ height: "100%" }}>
-          <Card style={boxShadow} styles={cardPadding}>
-            <Row gutter={16}>
-              <Col span={8}>
-                <Flex style={{ flex: "1" }}>
-                  <Input
-                    value={inputValue}
-                    onChange={(e) => this.inputChangeClicker(e.target.value)}
-                    placeholder={`请根据${
-                      inputSelectType === "name" ? "名称" : "ID"
-                    }查询数据`}
-                  />
-                  <Select
-                    value={inputSelectType}
-                    onChange={(e) => this.onChangeSelectClicker(e)}
-                    options={[
-                      {
-                        value: "id",
-                        label: "按照ID查询",
-                      },
-                      {
-                        value: "name",
-                        label: "按名称查询",
-                      },
-                    ]}
-                  />
-                </Flex>
-              </Col>
+      <>
+        <div className={style["monitor-container"]}>
+          <Flex vertical gap="small" style={{ height: "100%" }}>
+            <Card style={boxShadow} styles={cardPadding}>
+              <Row gutter={16}>
+                <Col span={8}>
+                  <Flex style={{ flex: "1" }}>
+                    <Input
+                      value={inputValue}
+                      onChange={(e) => this.inputChangeClicker(e.target.value)}
+                      placeholder={`请根据${
+                        inputSelectType === "name" ? "名称" : "ID"
+                      }查询数据`}
+                    />
+                    <Select
+                      value={inputSelectType}
+                      onChange={(e) => this.onChangeSelectClicker(e)}
+                      options={[
+                        {
+                          value: "id",
+                          label: "按照ID查询",
+                        },
+                        {
+                          value: "name",
+                          label: "按名称查询",
+                        },
+                      ]}
+                    />
+                  </Flex>
+                </Col>
 
-              <Col span={8}>
-                <Flex style={{ flex: "1" }}>
-                  <Select
-                    value={monitorStatus}
-                    placeholder="请选择充电站监控状态"
-                    style={{ width: "100%" }}
-                    onChange={this.handleMonitorStatusChangeClicker}
-                    options={[
-                      { value: 1, label: "空闲中" },
-                      { value: 2, label: "使用中" },
-                      { value: 3, label: "待维修" },
-                      { value: 4, label: "维护中" },
-                    ]}
-                  />
-                </Flex>
-              </Col>
-              <Col span={8}>
-                <Flex
-                  gap="small"
-                  style={{ flex: "1", justifyContent: "flex-end" }}
-                >
-                  <Button
-                    type="primary"
-                    icon={<SearchOutlined></SearchOutlined>}
+                <Col span={8}>
+                  <Flex style={{ flex: "1" }}>
+                    <Select
+                      value={monitorStatus}
+                      placeholder="请选择充电站监控状态"
+                      style={{ width: "100%" }}
+                      onChange={this.handleMonitorStatusChangeClicker}
+                      options={statusOptions}
+                    />
+                  </Flex>
+                </Col>
+                <Col span={8}>
+                  <Flex
+                    gap="small"
+                    style={{ flex: "1", justifyContent: "flex-end" }}
                   >
-                    查 询
-                  </Button>
-                  <Button onClick={this.reset.bind(this)}>重 置</Button>
-                </Flex>
-              </Col>
-            </Row>
-          </Card>
-          <Card style={boxShadow} styles={cardPadding}>
-            <Row gutter={38} justify="space-around">
-              <Col flex={1}>
-                <Statistic title="累计充电量(度)" value={112893} />
-              </Col>
-              <Col flex={1} style={{ textAlign: "center" }}>
-                <Statistic title="累计充电次数(次)" value={89893} />
-              </Col>
-              <Col flex={1} style={{ textAlign: "right" }}>
-                <Statistic title="服务区域(个)" value={193} />
-              </Col>
-            </Row>
-          </Card>
+                    <Button
+                      type="primary"
+                      onClick={this.getMonitorDatas}
+                      icon={<SearchOutlined></SearchOutlined>}
+                    >
+                      查 询
+                    </Button>
+                    <Button onClick={this.reset.bind(this)}>重 置</Button>
+                  </Flex>
+                </Col>
+              </Row>
+            </Card>
+            <Card style={boxShadow} styles={cardPadding}>
+              <Row gutter={38} justify="space-around">
+                <Col flex={1}>
+                  <Statistic title="累计充电量(度)" value={112893} />
+                </Col>
+                <Col flex={1} style={{ textAlign: "center" }}>
+                  <Statistic title="累计充电次数(次)" value={89893} />
+                </Col>
+                <Col flex={1} style={{ textAlign: "right" }}>
+                  <Statistic title="服务区域(个)" value={193} />
+                </Col>
+              </Row>
+            </Card>
 
-          <Card style={boxShadow} styles={cardPadding}>
-            <Row gutter={16}>
-              <Col span={24}>
-                <Button type="primary">
-                  <PlusOutlined />
-                  新增充电站
-                </Button>
-              </Col>
-            </Row>
-          </Card>
-          <Card
-            style={{
-              ...boxShadow,
-              height: "100%",
-            }}
-            styles={cardPadding}
-          >
-            {/* 
-              onChange={this.tableOnChange} */}
-            <Table<DataType>
-              style={{ width: "100%", flex: 1 }}
-              columns={columns}
-              dataSource={datas}
-              pagination={{
-                current: pagination.pageNum,
-                pageSize: pagination.pageSize,
-                total: pagination.total,
-                onChange: this.pageOnChange,
+            <Card style={boxShadow} styles={cardPadding}>
+              <Row gutter={16}>
+                <Col span={24}>
+                  <Button onClick={() => this.openMonitorDrawerClicker(true)} type="primary">
+                    <PlusOutlined />
+                    新增充电站
+                  </Button>
+                </Col>
+              </Row>
+            </Card>
+            <Card
+              style={{
+                ...boxShadow,
+                height: "100%",
               }}
-            />
-          </Card>
-          {/* <Card style={boxShadow}>
-            <Row gutter={16}>分页</Row>
-          </Card> */}
-        </Flex>
-      </div>
+              styles={cardPadding}
+            >
+              {/* 
+              onChange={this.tableOnChange} */}
+              <Table<DataType>
+                style={{ width: "100%", flex: 1 }}
+                columns={columns}
+                dataSource={datas}
+                loading={loading}
+                pagination={{
+                  current: pagination.pageNum,
+                  pageSize: pagination.pageSize,
+                  total: pagination.total,
+                  onChange: this.pageOnChange,
+                }}
+              />
+            </Card>
+          </Flex>
+        </div>
+        <EditMonitor open={this.state.open} onClose={this.openMonitorDrawerClicker} />
+      </>
     );
   }
 }

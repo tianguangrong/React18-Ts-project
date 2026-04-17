@@ -4,10 +4,15 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>中国石化</title>
+    <title id="title"></title>
   </head>
   <body>
-    <div id="root" style="overflow: hidden;"></div>
+    <div id="root" style="overflow: hidden"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <script type="module">
+      import global from "/src/globalSetting.ts";
+      const title = document.getElementById("title");
+      title.innerHTML = global.title;
+    </script>
   </body>
 </html>

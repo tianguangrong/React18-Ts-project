@@ -1,5 +1,6 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react-swc'
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react-swc';
+import path from 'path';
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -10,4 +11,10 @@ export default defineConfig({
     open: false, // 可选：启动时自动打开浏览器
     strictPort: true, // 可选：如果端口已被占用，则终止启动
   },
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname,'./src'),
+      '@utils': path.resolve(__dirname, './src/utils'),
+    }
+  }
 });

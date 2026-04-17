@@ -11,6 +11,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import routeList from '../../routes/list';
 import { updateCurrentActivePathname, addToNavStack } from '../../store/slices/navSlice';
 import { UseTheme } from '../../utils/ThemeProvider';
+import global from '@/globalSetting.ts';
 
 const resetRouterList = (list: object[], flag?: boolean): object[] => {
   const originList = routeList && routeList[1].children || [];
@@ -95,7 +96,7 @@ function MenuComent() {
     <div className={classNames(menuStyle['demo-logo-vertical'], menuStyle[`theme-${theme}`])}>
         <h2 className={classNames(menuStyle['logo-content'])}>
           <img className={menuStyle['logo']} src="http://www.sinopecgroup.com/r/cms/jtyw/default/images/indexfootlogo.png" alt="" />
-          中国石化</h2>
+          {global.title}</h2>
     </div>
     {
       !isPending ?
