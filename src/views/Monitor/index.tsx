@@ -7,10 +7,13 @@ import {
   Col,
   Row,
   Button,
+  Popconfirm,
   Statistic,
   Table,
+  notification,
 } from "antd";
 import React, { Component } from "react";
+import { QuestionCircleOutlined } from "@ant-design/icons";
 import style from "./index.module.scss";
 import type { TableProps } from "antd";
 import { httpGet, httpPost } from "@utils/axios";
@@ -31,89 +34,16 @@ interface DataType {
   tel: string | null;
   opera?: any;
 }
+type NotificationType = 'success' | 'info' | 'warning' | 'error';
+
 const statusOptions = [
   { value: 1, label: "空闲中" },
   { value: 2, label: "使用中" },
   { value: 3, label: "待维修" },
   { value: 4, label: "维护中" },
 ];
-const columns: TableProps<DataType>["columns"] = [
-  {
-    title: "序号",
-    dataIndex: "index",
-    key: "index",
-    render: (text) => <a>{text}</a>,
-  },
-  {
-    title: "站点名称",
-    dataIndex: "name",
-    key: "name",
-  },
-  {
-    title: "站点ID",
-    dataIndex: "id",
-    key: "id",
-  },
 
-  {
-    title: "所属城市",
-    dataIndex: "city",
-    key: "city",
-  },
-  {
-    title: "快充数",
-    dataIndex: "fast",
-    key: "fast",
-  },
-  {
-    title: "慢充数",
-    dataIndex: "slow",
-    key: "slow",
-  },
-  {
-    title: "状态",
-    key: "status",
-    dataIndex: "status",
-    render: (_, { status }) => (
-      <>
-        {statusOptions.find((item) => item.value === status)?.label ?? (
-          <span style={{ color: "lightgray" }}>未知</span>
-        )}
-      </>
-    ),
-  },
-  {
-    title: "正在充电数",
-    dataIndex: "now",
-    key: "now",
-  },
-  {
-    title: "故障数",
-    dataIndex: "slow",
-    key: "slow",
-  },
-  {
-    title: "责任人",
-    dataIndex: "person",
-    key: "person",
-  },
-  {
-    title: "责任人电话",
-    dataIndex: "tel",
-    key: "tel",
-  },
 
-  {
-    title: "操作",
-    key: "opera",
-    render: (_, record) => (
-      <Space size="middle">
-        <Button type="primary">编辑</Button>
-        <Button>删除</Button>
-      </Space>
-    ),
-  },
-];
 export default class Monitor extends Component {
   // options:Array<any> = []
   state: {
@@ -121,13 +51,14 @@ export default class Monitor extends Component {
     inputValue: string;
     monitorStatus: null | number;
     loading: boolean;
-    open: boolean,
+    open: boolean;
     pagination: {
       pageNum: number;
       pageSize: number;
       total: number;
     };
     datas: DataType[];
+    row: any;
   };
   constructor(props: any) {
     super(props);
@@ -143,6 +74,7 @@ export default class Monitor extends Component {
         total: 0,
       },
       datas: [],
+      row: null,
     };
   }
   onChangeSelectClicker = (value: any) => {
@@ -236,11 +168,112 @@ export default class Monitor extends Component {
   componentDidMount(): void {
     this.getMonitorDatas();
   }
-  openMonitorDrawerClicker = (flag: boolean) => {
-    debugger
-     this.setState({open: flag})
+  onHandleConfirmClicker():void {
+    notification.success({
+      message: '成功',
+      description: '删除成功'
+    })
   }
+  openMonitorDrawerClicker = (flag: boolean, row: any) => {
+    this.setState({ open: flag, row: row });
+  };
   render() {
+    const columns: TableProps<DataType>["columns"] = [
+      {
+        title: "序号",
+        dataIndex: "index",
+        key: "index",
+        render: (text) => <a>{text}</a>,
+      },
+      {
+        title: "站点名称",
+        dataIndex: "name",
+        key: "name",
+      },
+      {
+        title: "站点ID",
+        dataIndex: "id",
+        key: "id",
+      },
+
+      {
+        title: "所属城市",
+        dataIndex: "city",
+        key: "city",
+      },
+      {
+        title: "快充数",
+        dataIndex: "fast",
+        key: "fast",
+      },
+      {
+        title: "慢充数",
+        dataIndex: "slow",
+        key: "slow",
+      },
+      {
+        title: "状态",
+        key: "status",
+        dataIndex: "status",
+        render: (_, { status }) => (
+          <>
+            {statusOptions.find((item) => item.value === status)?.label ?? (
+              <span style={{ color: "lightgray" }}>未知</span>
+            )}
+          </>
+        ),
+      },
+      {
+        title: "正在充电数",
+        dataIndex: "now",
+        key: "now",
+      },
+      {
+        title: "故障数",
+        dataIndex: "slow",
+        key: "slow",
+      },
+      {
+        title: "责任人",
+        dataIndex: "person",
+        key: "person",
+      },
+      {
+        title: "责任人电话",
+        dataIndex: "tel",
+        key: "tel",
+      },
+
+      {
+        title: "操作",
+        key: "opera",
+        render: (_, row: any) => {
+          return (
+            <Space size="middle">
+              <Button
+                color="primary"
+                variant="text"
+                onClick={() => this.openMonitorDrawerClicker(true, row)}
+              >
+                编辑
+              </Button>
+              <Popconfirm
+                title="数据删除"
+                description="你确定要删除该条数据吗？"
+                icon={<QuestionCircleOutlined style={{ color: "red" }} />}
+                cancelText="取消"
+                okText="确定"
+                onConfirm={this.onHandleConfirmClicker.bind(this)}
+              >
+                <Button color="danger" variant="text">
+                  删除
+                </Button>
+              </Popconfirm>
+            </Space>
+          );
+        },
+      },
+    ];
     const boxShadow = { boxShadow: "0px 0px 12px rgba(0, 0, 0, 0.12)" };
     const {
       inputSelectType,
@@ -334,7 +367,10 @@ export default class Monitor extends Component {
             <Card style={boxShadow} styles={cardPadding}>
               <Row gutter={16}>
                 <Col span={24}>
-                  <Button onClick={() => this.openMonitorDrawerClicker(true)} type="primary">
+                  <Button
+                    onClick={() => this.openMonitorDrawerClicker(true, null)}
+                    type="primary"
+                  >
                     <PlusOutlined />
                     新增充电站
                   </Button>
@@ -365,7 +401,11 @@ export default class Monitor extends Component {
             </Card>
           </Flex>
         </div>
-        <EditMonitor open={this.state.open} onClose={this.openMonitorDrawerClicker} />
+        <EditMonitor
+          open={this.state.open}
+          row={this.state.row}
+          onClose={this.openMonitorDrawerClicker}
+        />
       </>
     );
   }

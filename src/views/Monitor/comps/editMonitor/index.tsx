@@ -2,7 +2,6 @@ import { PlusOutlined } from "@ant-design/icons";
 import {
   Button,
   Col,
-  DatePicker,
   Drawer,
   Form,
   Input,
@@ -64,22 +63,42 @@ const formItemLayout = {
   wrapperCol: { span: 14 },
 };
 const { Option } = Select;
-type monitorProps = {
+type monitorProps<T> = {
   open: boolean;
-  onClose?: (flag: boolean) => void;
+  row?: T;
+  onClose: (flag: boolean, row: FieldType | null) => void;
 };
-type FieldType = {
-  name?: string;
-  [key: string]: any;
-};
-const EditMonitor: React.FC<monitorProps> = (props) => {
-  // const [form] = Form.useForm();
+interface FieldType {
+  id?: string;
+  name: string;
+  city: string;
+  fast: number;
+  slow: number;
+  status: number;
+  now: number;
+  fault: number;
+  person: string;
+  tel: number;
+}
+const EditMonitor: React.FC<monitorProps<FieldType>> = (props) => {
+  const [form] = Form.useForm();
   const [open, setOpen] = useState(false);
   useEffect(() => {
     setOpen(props.open);
-  }, [props]);
+  }, [props.open]);
 
+  useEffect(() => {
+    if (props.row) {
+      form.setFieldsValue({ ...props.row });
+    }
+    // else {
+    //   debugger
+    //   form.resetFields();
+    // }
+  }, [props.row]);
   const onClose = () => {
+    form.resetFields();
+    props.onClose(false, null);
     setOpen(false);
   };
   const onFinish: FormProps<FieldType>["onFinish"] = (values) => {
@@ -107,10 +126,15 @@ const EditMonitor: React.FC<monitorProps> = (props) => {
           </Space>
         }
       >
-        <Form layout="horizontal" onFinish={onFinish} {...formItemLayout}>
+        <Form
+          layout="horizontal"
+          onFinish={onFinish}
+          form={form}
+          {...formItemLayout}
+        >
           <Row gutter={16}>
             <Col span={24}>
-              <Form.Item
+              <Form.Item<FieldType>
                 name="name"
                 label="充电站名称"
                 rules={[{ required: true, message: "请输入充电站名称" }]}
@@ -119,18 +143,24 @@ const EditMonitor: React.FC<monitorProps> = (props) => {
               </Form.Item>
             </Col>
             <Col span={24}>
-              <Form.Item
+              <Form.Item<FieldType>
                 name="fast"
                 label="快充数"
                 rules={[{ required: true, message: "请输入快充数" }]}
               >
-                <InputNumber min={0} defaultValue={0}  suffix="个"  style={{ width: '100%' }} placeholder="请输入快充数" />
+                <InputNumber
+                  min={0}
+                  defaultValue={0}
+                  suffix="个"
+                  style={{ width: "100%" }}
+                  placeholder="请输入快充数"
+                />
               </Form.Item>
             </Col>
           </Row>
           <Row gutter={16}>
             <Col span={24}>
-              <Form.Item
+              <Form.Item<FieldType>
                 name="city"
                 label="所属城市"
                 rules={[{ required: true, message: "请选择所属城市" }]}
@@ -143,18 +173,24 @@ const EditMonitor: React.FC<monitorProps> = (props) => {
               </Form.Item>
             </Col>
             <Col span={24}>
-              <Form.Item
+              <Form.Item<FieldType>
                 name="slow"
                 label="慢充数"
                 rules={[{ required: true, message: "请输入慢充数" }]}
               >
-                <InputNumber min={0} defaultValue={0}  suffix="个"  style={{ width: '100%' }} placeholder="请输入慢充数" />
+                <InputNumber
+                  min={0}
+                  defaultValue={0}
+                  suffix="个"
+                  style={{ width: "100%" }}
+                  placeholder="请输入慢充数"
+                />
               </Form.Item>
             </Col>
           </Row>
           <Row gutter={16}>
             <Col span={24}>
-              <Form.Item
+              <Form.Item<FieldType>
                 name="status"
                 label="充电状态"
                 rules={[{ required: true, message: "请选择充电状态" }]}
@@ -167,27 +203,39 @@ const EditMonitor: React.FC<monitorProps> = (props) => {
               </Form.Item>
             </Col>
             <Col span={24}>
-              <Form.Item
+              <Form.Item<FieldType>
                 name="now"
                 label="正在充电数"
                 rules={[{ required: false, message: "请输入正在充电数" }]}
               >
-                <InputNumber min={0} defaultValue={0}  suffix="个"  style={{ width: '100%' }} placeholder="请输入正在充电数" />
+                <InputNumber
+                  min={0}
+                  defaultValue={0}
+                  suffix="个"
+                  style={{ width: "100%" }}
+                  placeholder="请输入正在充电数"
+                />
               </Form.Item>
             </Col>
           </Row>
           <Row gutter={16}>
             <Col span={24}>
-              <Form.Item
+              <Form.Item<FieldType>
                 name="fault"
                 label="故障数"
                 rules={[{ required: true, message: "请输入故障数" }]}
               >
-                <InputNumber min={0} defaultValue={0}  suffix="个"  style={{ width: '100%' }} placeholder="请输入故障数" />
+                <InputNumber
+                  min={0}
+                  defaultValue={0}
+                  suffix="个"
+                  style={{ width: "100%" }}
+                  placeholder="请输入故障数"
+                />
               </Form.Item>
             </Col>
             <Col span={24}>
-              <Form.Item
+              <Form.Item<FieldType>
                 name="person"
                 label="责任人"
                 rules={[{ required: true, message: "请输入责任人" }]}
@@ -198,12 +246,16 @@ const EditMonitor: React.FC<monitorProps> = (props) => {
           </Row>
           <Row gutter={16}>
             <Col span={24}>
-              <Form.Item
-                name="person"
+              <Form.Item<FieldType>
+                name="tel"
                 label="责任人电话"
                 rules={[{ required: true, message: "请输入责任人电话" }]}
               >
-                <InputNumber min={0}  suffix="个" style={{ width: '100%' }} placeholder="请输入责任人电话" />
+                <InputNumber
+                  min={0}
+                  style={{ width: "100%" }}
+                  placeholder="请输入责任人电话"
+                />
               </Form.Item>
             </Col>
           </Row>
