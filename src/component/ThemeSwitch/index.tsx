@@ -1,10 +1,10 @@
 import React, { useContext } from 'react'
 import { Space, Switch } from 'antd';
 // import { ThemeContext } from '../../App';
-import { UseTheme } from '../../utils/ThemeProvider';
+import { useTheme } from '../../utils/ThemeProvider';
 const ThemeSwitch = () => {
     
-    const {theme, toggleTheme} = UseTheme()
+    const {theme, toggleTheme} = useTheme()
     const changeCurrentTheme = (checked: boolean) => {
         console.log('checked', checked);
         toggleTheme!()

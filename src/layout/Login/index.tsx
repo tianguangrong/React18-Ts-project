@@ -8,7 +8,7 @@ import type { AppDispatch } from "../../store";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchUser } from "../../store/slices/loginSlice";
 import { useNavigate } from "react-router-dom";
-import global from "@/globalSetting.ts";
+import global from "../../globalSetting.ts";
 type FieldType = {
   username?: string;
   password?: string;

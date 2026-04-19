@@ -1,6 +1,6 @@
 import React from 'react'
 import { Layout } from 'antd';
-import dltStyle from  './DefaultLayout.module.scss';
+import dltStyle from './DefaultLayout.module.scss';
 import MenuComent from '../component/MenuContent';
 import HeaderContent from '../component/HeaderContent';
 import MainContent from '../component/MainContent';
@@ -16,12 +16,12 @@ export default function DefaultLayout() {
         }}>
           <MenuComent />
           <Layout>
-              <HeaderContent />
+            <HeaderContent />
             <MainContent />
-            <FooterContent/>
+            <FooterContent />
           </Layout>
         </Layout>
       </div>
-      </ThemeProvider>
+    </ThemeProvider>
   )
 }

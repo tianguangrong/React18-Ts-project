@@ -10,7 +10,7 @@ import type { IUserType, NavStateType } from '../../types';
 import { useLocation, useNavigate } from 'react-router-dom';
 import routeList from '../../routes/list';
 import { updateCurrentActivePathname, addToNavStack } from '../../store/slices/navSlice';
-import { UseTheme } from '../../utils/ThemeProvider';
+import { useTheme } from '../../utils/ThemeProvider';
 import global from '@/globalSetting.ts';
 
 const resetRouterList = (list: object[], flag?: boolean): object[] => {
@@ -38,7 +38,7 @@ const resetRouterList = (list: object[], flag?: boolean): object[] => {
  return result
 }
 function MenuComent() {
-  const { theme } = UseTheme()
+  const { theme } = useTheme()
   const {datas = {}} = useSelector((state:IUserType) => state.user);
    const { currentActivePath } = useSelector((state:{
       nav: NavStateType
