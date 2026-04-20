@@ -343,6 +343,7 @@ const Revenue: React.FC = () => {
                 placeholder="请输入站点名称"
                 enterButton="查询"
                 suffix={suffix}
+                allowClear
                 style={{ width: 300 }}
                 onSearch={onSearch}
               />
