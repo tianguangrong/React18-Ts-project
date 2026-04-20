@@ -12,7 +12,7 @@ import {
   Table,
   notification,
 } from "antd";
-import React, { Component } from "react";
+import React, { Component, useMemo } from "react";
 import { QuestionCircleOutlined } from "@ant-design/icons";
 import style from "./index.module.scss";
 import type { TableProps } from "antd";
@@ -70,7 +70,7 @@ export default class Monitor extends Component {
       open: false,
       pagination: {
         pageNum: 1,
-        pageSize: 10,
+        pageSize: 8,
         total: 0,
       },
       datas: [],
@@ -182,39 +182,39 @@ export default class Monitor extends Component {
       {
         title: "序号",
         dataIndex: "index",
-        key: "index",
         render: (text) => <a>{text}</a>,
+        width:80,
       },
       {
         title: "站点名称",
         dataIndex: "name",
-        key: "name",
+        width:200,
       },
       {
         title: "站点ID",
         dataIndex: "id",
-        key: "id",
+        width:100,
       },
 
       {
         title: "所属城市",
         dataIndex: "city",
-        key: "city",
+        width:140,
       },
       {
         title: "快充数",
         dataIndex: "fast",
-        key: "fast",
+        width:100,
       },
       {
         title: "慢充数",
         dataIndex: "slow",
-        key: "slow",
+        width:100,
       },
       {
         title: "状态",
-        key: "status",
         dataIndex: "status",
+        width:100,
         render: (_, { status }) => (
           <>
             {statusOptions.find((item) => item.value === status)?.label ?? (
@@ -226,27 +226,29 @@ export default class Monitor extends Component {
       {
         title: "正在充电数",
         dataIndex: "now",
-        key: "now",
+        width:140,
       },
       {
         title: "故障数",
         dataIndex: "slow",
-        key: "slow",
+        width:100,
       },
       {
         title: "责任人",
         dataIndex: "person",
-        key: "person",
+        width:100,
       },
       {
         title: "责任人电话",
         dataIndex: "tel",
-        key: "tel",
+        width:140,
       },
 
       {
         title: "操作",
         key: "opera",
+        width: 200,
+        fixed:'right',
         render: (_, row: any) => {
           return (
             <Space size="middle">
@@ -290,7 +292,7 @@ export default class Monitor extends Component {
         padding: "6px 12px",
       },
     };
-    return (
+    return (  
       <>
         <div className={style["monitor-container"]}>
           <Flex vertical gap="small" style={{ height: "100%" }}>
@@ -387,10 +389,11 @@ export default class Monitor extends Component {
               {/* 
               onChange={this.tableOnChange} */}
               <Table<DataType>
-                style={{ width: "100%", flex: 1 }}
+                style={{ width: "auto", flex: 1 }}
                 columns={columns}
                 dataSource={datas}
                 loading={loading}
+                scroll={{x:1200}}
                 pagination={{
                   current: pagination.pageNum,
                   pageSize: pagination.pageSize,

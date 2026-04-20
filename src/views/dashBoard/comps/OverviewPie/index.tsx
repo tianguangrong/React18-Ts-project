@@ -58,7 +58,9 @@ const OverviewPie = () => {
         window.addEventListener('resize',() => {
             pieInstance?.resize();
         })
-        return pieInstance?.dispose();
+        return () => {
+          pieInstance?.dispose();
+        }
     }, [])
     return (
         <Spin spinning={loading}>
