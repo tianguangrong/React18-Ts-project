@@ -355,7 +355,7 @@ const Revenue: React.FC = () => {
                 columns={memoColumns}
                 dataSource={tableData}
                 loading={loading}
-                scroll={{ x: 1200 }}
+                scroll={{ x: 'max-content' }}
                 pagination={{
                   current: pagination.pageNum,
                   pageSize: pagination.pageSize,

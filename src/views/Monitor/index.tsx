@@ -393,7 +393,7 @@ export default class Monitor extends Component {
                 columns={columns}
                 dataSource={datas}
                 loading={loading}
-                scroll={{x:1200}}
+                scroll={{ x: 'max-content' }}
                 pagination={{
                   current: pagination.pageNum,
                   pageSize: pagination.pageSize,
