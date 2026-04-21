@@ -134,10 +134,10 @@ Mock.mock('https://www.demo.com/api/get-device-sumary', 'get', () => {
     }
 })
 Mock.mock('https://www.demo.com/api/login', 'post', (options: any) => {
+  console.log('options', JSON.parse(options.body));
   
-  const { loginName, loginPsw } = JSON.parse(options.body);
-  console.log('options', loginName, loginPsw);
-  if (loginName === 'admin' && loginPsw === 'admin123.') {
+  const { username, password } = JSON.parse(options.body);
+  if (username === 'admin' && password === 'admin123.') {
     return {
       code: 200,
       message: '登录成功',
@@ -150,7 +150,7 @@ Mock.mock('https://www.demo.com/api/login', 'post', (options: any) => {
         menulist: menulist,
       }
     }
-  } else if (loginName === 'user' && loginPsw === 'user123.') {
+  } else if (username === 'user' && password === 'user123.') {
     return {
       code: 200,
       message: '登录成功',
@@ -1119,7 +1119,7 @@ Mock.mock("https://www.demo.com/api/revenueList", 'post', (options: any) => {
 
 //充电桩管理接口
 //充电桩管理
-let chargingPile = [
+const chargingPile = [
   {
     id: "VXZ10001",
     name: "北京西单充电站",
@@ -1925,6 +1925,36 @@ let chargingPile = [
   },
 
 ]
+const chargingStatus = [
+  // 1空闲 2充电中 3连接中 4排队中 5被预约 6故障/离线
+  {
+    value: 1,
+    label: '空闲'
+  },{
+    value: 2,
+    label: '充电中'
+  },{
+    value: 3,
+    label: '连接中'
+  },{
+    value: 4,
+    label: '排队中'
+  },{
+    value: 5,
+    label: '被预约'
+  },{
+    value: 6,
+    label: '故障/离线'
+  },
+];
+//充电桩状态
+Mock.mock("https://www.demo.com/api/currentStatus", "get", () => {
+  return {
+    code: 200,
+    success: true,
+    data: chargingStatus
+  }
+})
 //充电桩列表接口
 Mock.mock("https://www.demo.com/api/currentList", "post", () => {
   return {

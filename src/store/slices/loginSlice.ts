@@ -13,6 +13,7 @@ interface IUserCallbackMes {
     token: string,
     role: string,
     homeRouteList: object[],
+    [key: string]: any
 };
 
 type fetchStatus = 'init' | 'loading' | 'fulfilled' | 'rejected';
@@ -62,8 +63,14 @@ const userSlice = createSlice({
       })
       .addCase(fetchUser.fulfilled, (state, action: PayloadAction<IUserCallbackMes>) => {
         console.log('action.payload', action.payload);
+        const payload = action.payload;
         state.status = 'fulfilled';
-        state.datas = action.payload;
+        state.datas = {
+          username:payload?.user?.username,
+          homeRouteList:payload.menulist,
+          role: payload.user.role,
+          token: payload.token
+        };
         state.error = null;
         localStorage.setItem('user', JSON.stringify(state.datas))
         localStorage.setItem('status', state.status)
