@@ -1928,8 +1928,12 @@ const chargingPile = [
 const chargingStatus = [
   // 1空闲 2充电中 3连接中 4排队中 5被预约 6故障/离线
   {
+    value: 0,
+    label: '全部'
+  },
+  {
     value: 1,
-    label: '空闲'
+    label: '空闲中'
   },{
     value: 2,
     label: '充电中'
