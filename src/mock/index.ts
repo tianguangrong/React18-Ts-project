@@ -2179,6 +2179,7 @@ Mock.mock('https://www.demo.com/api/orderList', 'post', (options: any) => {
   return {
     code: 200,
     message: "成功",
+    // data: []
     data: Mock.mock({
       [`list|${pageSize}`]: [{
         'orderNo': '@string("number", 6)', //订单号
