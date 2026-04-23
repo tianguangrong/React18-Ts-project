@@ -1,4 +1,10 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   Card,
   Row,
@@ -10,7 +16,10 @@ import {
   Space,
   Select,
   Table,
+  Tag,
+  Popconfirm,
 } from "antd";
+import { QuestionCircleOutlined } from "@ant-design/icons";
 import curStyle from "./index.module.scss";
 import setting from "../../globalSetting";
 import type { Dayjs } from "dayjs";
@@ -25,9 +34,15 @@ type DatePickerType = [
 ];
 interface DataType {
   key: React.Key;
-  name: string;
-  age: number;
-  address: string;
+  orderNo: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+  equipmentNo: string;
+  money: number;
+  pay: string;
+  status: number;
+  opera?: any;
 }
 interface Ipage {
   pageNum: number;
@@ -35,35 +50,99 @@ interface Ipage {
   total: number;
 }
 
-const columns: TableColumnsType<DataType> = [
-  { title: "Name", dataIndex: "name" },
-  { title: "Age", dataIndex: "age" },
-  { title: "Address", dataIndex: "address" },
+const statusOptions = [
+  { value: 1, label: "进行中" },
+  { value: 2, label: "异常中" },
+  { value: 3, label: "已完成" },
 ];
-const dataSource = Array.from<DataType>({ length: 46 }).map<DataType>(
-  (_, i) => ({
-    key: i,
-    name: `Edward King ${i}`,
-    age: 32,
-    address: `London, Park Lane no. ${i}`,
-  }),
-);
+const columns: TableColumnsType<DataType> = [
+  { title: "序号", dataIndex: "index", key: "index" },
+  { title: "订单编号", dataIndex: "orderNo", key: "orderNo" },
+  { title: "创建日期", dataIndex: "date", key: "date" },
+  { title: "开始时间", dataIndex: "startTime", key: "startTime" },
+  { title: "结束时间", dataIndex: "endTime", key: "endTime" },
+  { title: "设备编号", dataIndex: "equipmentNo", key: "equipmentNo" },
+  { title: "消费金额(元)", dataIndex: "money", key: "money" },
+  { title: "支付方式", dataIndex: "pay", key: "pay" },
+  // {
+  //   title: "订单状态",
+  //   dataIndex: "status",
+  //   render: (_, { status }) => <>{status && payLabelByStatus(status)}</>,
+  // },
+];
 
+const payLabelByStatus = (value: number): any => {
+  const current = statusOptions.find((item) => item.value === value);
+  if (current?.label) {
+    return (
+      <Tag
+        color={value === 1 ? "green" : value === 2 ? "red" : "blue"}
+        bordered={false}
+      >
+        {current.label}
+      </Tag>
+    );
+  }
+  return <span style={{ color: "lightgray" }}>未知</span>;
+};
 const Orders: React.FC = () => {
   const [orderNumber, setOrderNumber] = useState<string>("");
   const [deviceNumber, setDeviceNumber] = useState<string>("");
   const [payType, setpayType] = useState<string | undefined>(undefined);
   const [dateValues, setDateValues] = useState<any>([]);
   const [curStatus, setCurStatus] = useState<string | undefined>(undefined);
-  const dateValuesRef = useRef<DatePickerType>(["", ""]);
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [loading, setLoading] = useState(false);
+  const [dataSource, setDataSource] = useState<DataType[]>([]);
   const [pagination, setPagination] = useState<Ipage>({
     pageNum: 1,
     pageSize: 10,
     total: 0,
   });
 
+  
+  const dateValuesRef = useRef<DatePickerType>(["", ""]);
+  const originDatasRef = useRef<{list: DataType[],total: number} | undefined>(undefined);
+
+
+  // table 每行数据内容
+  const currentColumns: TableProps<DataType>["columns"] = useMemo(() => {
+    return [
+      ...columns,
+      {
+        title: "订单状态",
+        dataIndex: "status",
+        render: (_, { status }) => <>{status && payLabelByStatus(status)}</>,
+      },
+      {
+        title: "操作",
+        key: "opera",
+        width: 200,
+        fixed: "right",
+        render: (_, row: any) => {
+          return (
+            <Space size="middle">
+              <Button color="primary" variant="text" onClick={() => {}}>
+                详情
+              </Button>
+              <Popconfirm
+                title="数据删除"
+                description="你确定要删除该条数据吗？"
+                icon={<QuestionCircleOutlined style={{ color: "red" }} />}
+                cancelText="取消"
+                okText="确定"
+                onConfirm={() => {}}
+              >
+                <Button color="danger" variant="text">
+                  删除
+                </Button>
+              </Popconfirm>
+            </Space>
+          );
+        },
+      },
+    ];
+  }, []);
   // 订单编号数据记录
   const orderNumberChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     setOrderNumber(e.target.value);
@@ -96,6 +175,7 @@ const Orders: React.FC = () => {
     dateValuesRef.current = dateString;
   };
   const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
+    debugger;
     console.log("selectedRowKeys changed: ", newSelectedRowKeys);
     setSelectedRowKeys(newSelectedRowKeys);
   };
@@ -105,28 +185,40 @@ const Orders: React.FC = () => {
     onChange: onSelectChange,
   };
 
-  const hasSelected = selectedRowKeys.length > 0;
-
   // 请求api获取数据 /api/orderList
-  const getOrderManDatas = async (): Promise<void> => {
+  const getOrderManDatas = useCallback(async () => {
     setLoading(() => true);
     try {
       const datas = {
         pageNum: pagination.pageNum,
         pageSize: pagination.pageSize,
       };
-      const { code, data } = (await httpPost("/api/orderList", datas)) as any;
-      debugger;
+      const {
+        code,
+        data: { list, total },
+      } = (await httpPost("/api/orderList", datas)) as any;
       if (code === 200) {
-        console.log(data);
-        debugger;
+        setDataSource(
+          list.map((item: DataType, index: number) => ({
+            ...item,
+            index: index + 1,
+          })),
+        );
+        setPagination({
+          ...pagination,
+          total,
+        });
+        originDatasRef.current = {
+          list,
+          total
+        }
       }
       setLoading(() => false);
     } catch (error) {
       console.error(error);
       setLoading(false);
     }
-  };
+  }, []);
   const pageOnChange = (pageNum: number, pageSize: number) => {};
   useEffect(() => {
     getOrderManDatas();
@@ -158,11 +250,7 @@ const Orders: React.FC = () => {
                 placeholder="请选择订单状态"
                 allowClear
                 value={curStatus}
-                options={[
-                  { value: "进行中", label: "进行中" },
-                  { value: "异常", label: "异常" },
-                  { value: "已完成", label: "已完成" },
-                ]}
+                options={statusOptions}
               />
             </Col>
             <Col span={6}>
@@ -183,7 +271,6 @@ const Orders: React.FC = () => {
                 allowClear
                 onChange={handlePayTypeChange}
                 placeholder="请选择支付方式"
-                
                 value={payType}
                 options={[
                   { value: "支付宝", label: "支付宝" },
@@ -242,7 +329,7 @@ const Orders: React.FC = () => {
               onChange: pageOnChange,
             }}
             rowSelection={rowSelection}
-            columns={columns}
+            columns={currentColumns}
             dataSource={dataSource}
           />
         </Card>

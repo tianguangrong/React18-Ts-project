@@ -2189,7 +2189,7 @@ Mock.mock('https://www.demo.com/api/orderList', 'post', (options: any) => {
         "equipmentNo|1": ['B109', 'C227', 'C106', "D158"],//设备编号
         'money|1': [66.5,88.9,22.7,36.5,42.0],//金额
         'pay|1': ["微信", "支付宝", "储值卡",],//支付方式
-        'status|1': [2, 3, 4],//订单状态
+        'status|1': [1, 2, 3],//订单状态
       }],
       "total": 54
     })
