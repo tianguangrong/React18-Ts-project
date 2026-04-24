@@ -4,6 +4,7 @@ import React, {
   useMemo,
   useRef,
   useState,
+  memo
 } from "react";
 import {
   Card,
@@ -25,6 +26,7 @@ import setting from "../../globalSetting";
 import type { Dayjs } from "dayjs";
 import type { TableColumnsType, TableProps } from "antd";
 import { httpPost } from "../../utils/axios";
+import useFetch from "../../hooks/useFetch";
 
 type TableRowSelection<T extends object = object> =
   TableProps<T>["rowSelection"];
@@ -64,11 +66,6 @@ const columns: TableColumnsType<DataType> = [
   { title: "设备编号", dataIndex: "equipmentNo", key: "equipmentNo" },
   { title: "消费金额(元)", dataIndex: "money", key: "money" },
   { title: "支付方式", dataIndex: "pay", key: "pay" },
-  // {
-  //   title: "订单状态",
-  //   dataIndex: "status",
-  //   render: (_, { status }) => <>{status && payLabelByStatus(status)}</>,
-  // },
 ];
 
 const payLabelByStatus = (value: number): any => {
@@ -85,25 +82,39 @@ const payLabelByStatus = (value: number): any => {
   }
   return <span style={{ color: "lightgray" }}>未知</span>;
 };
-const Orders: React.FC = () => {
-  const [orderNumber, setOrderNumber] = useState<string>("");
-  const [deviceNumber, setDeviceNumber] = useState<string>("");
-  const [payType, setpayType] = useState<string | undefined>(undefined);
+const Orders: React.FC = memo(() => {
+  const blankSearchParam = {
+    orderNum: "",
+    equipmentNo: "",
+    pay: "",
+    dates: [undefined, undefined],
+    status: "",
+  };
   const [dateValues, setDateValues] = useState<any>([]);
-  const [curStatus, setCurStatus] = useState<string | undefined>(undefined);
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
-  const [loading, setLoading] = useState(false);
   const [dataSource, setDataSource] = useState<DataType[]>([]);
-  const [pagination, setPagination] = useState<Ipage>({
-    pageNum: 1,
-    pageSize: 10,
-    total: 0,
-  });
+  // const [page, setPage] = useState<Ipage>({
+  //   pageNum: 1,
+  //   pageSize: 10,
+  //   total: 0,
+  // });
+  const [searchForm, setSearchForm] =
+    useState<typeof blankSearchParam>(blankSearchParam);
 
-  
-  const dateValuesRef = useRef<DatePickerType>(["", ""]);
-  const originDatasRef = useRef<{list: DataType[],total: number} | undefined>(undefined);
+  // const dateValuesRef = useRef<DatePickerType>(["", ""]);
 
+  const [result, pagination, setPagination, setCurrentParamsForDatas, loading] = useFetch(
+    "/api/orderList",
+    "Post"
+  );
+  const tableDataSource = useMemo(() => {
+    return result || [];
+  }, [result]);
+  // const tableDataSource2 = useMemo(() => {
+  //   console.log(pagination);
+  //   debugger
+  //   return pagination;
+  // }, [pagination]);
 
   // table 每行数据内容
   const currentColumns: TableProps<DataType>["columns"] = useMemo(() => {
@@ -145,37 +156,51 @@ const Orders: React.FC = () => {
   }, []);
   // 订单编号数据记录
   const orderNumberChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
-    setOrderNumber(e.target.value);
+    setSearchForm({
+      ...searchForm,
+      orderNum: e.target.value,
+    });
   };
   // 订单编号数据记录
   const deviceNumberChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
-    setDeviceNumber(e.target.value);
+    setSearchForm({
+      ...searchForm,
+      equipmentNo: e.target.value,
+    });
   };
   // 重置数据
   const handleResetForms = () => {
-    setOrderNumber("");
-    setpayType(undefined);
-    setDeviceNumber("");
-    setDateValues([]);
-    dateValuesRef.current = ["", ""];
-    setCurStatus(undefined);
+    setDateValues(null);
+    setSearchForm({
+      ...blankSearchParam,
+    });
+  };
+  const handleSearchForms = () => {
   };
   // 站点名称记录
   const handlePayTypeChange = (value: string): void => {
-    setpayType(value);
+    setSearchForm({
+      ...searchForm,
+      pay: value,
+    });
   };
   // 状态记录
   const handleStatusChange = (value: string) => {
-    console.log(`selected ${value}`);
-    setCurStatus(value);
+    setSearchForm({
+      ...searchForm,
+      status: value,
+    });
   };
   // 日期数据就
   const handleDatepickerChange = (values: any, dateString: DatePickerType) => {
     setDateValues(values);
-    dateValuesRef.current = dateString;
+    setSearchForm({
+      ...searchForm,
+      dates: dateString as any,
+    });
   };
   const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
-    debugger;
+    // debugger;
     console.log("selectedRowKeys changed: ", newSelectedRowKeys);
     setSelectedRowKeys(newSelectedRowKeys);
   };
@@ -185,43 +210,16 @@ const Orders: React.FC = () => {
     onChange: onSelectChange,
   };
 
-  // 请求api获取数据 /api/orderList
-  const getOrderManDatas = useCallback(async () => {
-    setLoading(() => true);
-    try {
-      const datas = {
-        pageNum: pagination.pageNum,
-        pageSize: pagination.pageSize,
-      };
-      const {
-        code,
-        data: { list, total },
-      } = (await httpPost("/api/orderList", datas)) as any;
-      if (code === 200) {
-        setDataSource(
-          list.map((item: DataType, index: number) => ({
-            ...item,
-            index: index + 1,
-          })),
-        );
-        setPagination({
-          ...pagination,
-          total,
-        });
-        originDatasRef.current = {
-          list,
-          total
-        }
-      }
-      setLoading(() => false);
-    } catch (error) {
-      console.error(error);
-      setLoading(false);
-    }
-  }, []);
-  const pageOnChange = (pageNum: number, pageSize: number) => {};
+  const pageOnChange = (pageNum: number, pageSize: number) => {
+    setPagination({
+      ...pagination,
+      pageNum,
+      pageSize
+    })
+    setCurrentParamsForDatas({ pageNum, pageSize});
+  };
   useEffect(() => {
-    getOrderManDatas();
+    // getOrderManDatas();
   }, []);
   return (
     <div className={curStyle["current-container"]}>
@@ -237,7 +235,7 @@ const Orders: React.FC = () => {
           <Row gutter={16} style={{ marginBottom: "12px" }}>
             <Col span={6}>
               <Input
-                value={orderNumber}
+                value={searchForm.orderNum}
                 allowClear
                 onChange={orderNumberChange}
                 placeholder="请输入订单编号"
@@ -249,13 +247,13 @@ const Orders: React.FC = () => {
                 onChange={handleStatusChange}
                 placeholder="请选择订单状态"
                 allowClear
-                value={curStatus}
+                value={searchForm.status}
                 options={statusOptions}
               />
             </Col>
             <Col span={6}>
               <Input
-                value={deviceNumber}
+                value={searchForm.equipmentNo}
                 allowClear
                 onChange={deviceNumberChange}
                 placeholder="请输入设备编号"
@@ -271,7 +269,7 @@ const Orders: React.FC = () => {
                 allowClear
                 onChange={handlePayTypeChange}
                 placeholder="请选择支付方式"
-                value={payType}
+                value={searchForm.pay}
                 options={[
                   { value: "支付宝", label: "支付宝" },
                   { value: "微信", label: "微信" },
@@ -291,7 +289,9 @@ const Orders: React.FC = () => {
             <Col span={6}></Col>
             <Col span={6}>
               <Flex gap={"small"} justify="end">
-                <Button type="primary">查 询</Button>
+                <Button type="primary" onClick={handleSearchForms}>
+                  查 询
+                </Button>
                 <Button onClick={handleResetForms}>重 置</Button>
               </Flex>
             </Col>
@@ -330,12 +330,12 @@ const Orders: React.FC = () => {
             }}
             rowSelection={rowSelection}
             columns={currentColumns}
-            dataSource={dataSource}
+            dataSource={tableDataSource}
           />
         </Card>
       </Flex>
     </div>
   );
-};
+});
 
 export default Orders;
