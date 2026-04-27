@@ -4,7 +4,7 @@ import React, {
   useMemo,
   useRef,
   useState,
-  memo
+  memo,
 } from "react";
 import {
   Card,
@@ -19,6 +19,8 @@ import {
   Table,
   Tag,
   Popconfirm,
+  message,
+  type PopconfirmProps,
 } from "antd";
 import { QuestionCircleOutlined } from "@ant-design/icons";
 import curStyle from "./index.module.scss";
@@ -35,6 +37,7 @@ type DatePickerType = [
   end: Dayjs | null | undefined | string,
 ];
 interface DataType {
+  id: string;
   key: React.Key;
   orderNo: string;
   date: string;
@@ -53,9 +56,10 @@ interface Ipage {
 }
 
 const statusOptions = [
-  { value: 1, label: "进行中" },
-  { value: 2, label: "异常中" },
-  { value: 3, label: "已完成" },
+  { value: "全部", label: "全部" },
+  { value: "1", label: "进行中" },
+  { value: "2", label: "异常中" },
+  { value: "3", label: "已完成" },
 ];
 const columns: TableColumnsType<DataType> = [
   { title: "序号", dataIndex: "index", key: "index" },
@@ -82,39 +86,31 @@ const payLabelByStatus = (value: number): any => {
   }
   return <span style={{ color: "lightgray" }}>未知</span>;
 };
+
 const Orders: React.FC = memo(() => {
-  const blankSearchParam = {
-    orderNum: "",
-    equipmentNo: "",
-    pay: "",
-    dates: [undefined, undefined],
-    status: "",
-  };
+  const blankSearchParam = useMemo(
+    () => ({
+      orderNum: "",
+      equipmentNo: "",
+      pay: "全部",
+      dates: ["", ""],
+      status: "全部",
+    }),
+    [],
+  );
   const [dateValues, setDateValues] = useState<any>([]);
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
-  const [dataSource, setDataSource] = useState<DataType[]>([]);
-  // const [page, setPage] = useState<Ipage>({
-  //   pageNum: 1,
-  //   pageSize: 10,
-  //   total: 0,
-  // });
   const [searchForm, setSearchForm] =
     useState<typeof blankSearchParam>(blankSearchParam);
 
-  // const dateValuesRef = useRef<DatePickerType>(["", ""]);
-
-  const [result, pagination, setPagination, setCurrentParamsForDatas, loading] = useFetch(
-    "/api/orderList",
-    "Post"
-  );
-  const tableDataSource = useMemo(() => {
-    return result || [];
-  }, [result]);
-  // const tableDataSource2 = useMemo(() => {
-  //   console.log(pagination);
-  //   debugger
-  //   return pagination;
-  // }, [pagination]);
+  const [
+    result,
+    pagination,
+    setPagination,
+    setCurrentParamsForDatas,
+    loading,
+    latestResultRef,
+  ] = useFetch<DataType>("/api/orderList", "Post");
 
   // table 每行数据内容
   const currentColumns: TableProps<DataType>["columns"] = useMemo(() => {
@@ -174,35 +170,50 @@ const Orders: React.FC = memo(() => {
     setSearchForm({
       ...blankSearchParam,
     });
+    setCurrentParamsForDatas({});
+    setPagination(() => {
+      return {
+        pageSize: 10,
+        pageNum: 1,
+        total: 0,
+      };
+    });
   };
   const handleSearchForms = () => {
+    const formatSearchForm: Record<string, any> = {
+      ...searchForm,
+      startDate: searchForm.dates[0],
+      endDate: searchForm.dates[1],
+    };
+    delete formatSearchForm.dates;
+    setCurrentParamsForDatas({ ...formatSearchForm });
+    console.log("latestResultRef", latestResultRef);
   };
   // 站点名称记录
   const handlePayTypeChange = (value: string): void => {
-    setSearchForm({
-      ...searchForm,
+    setSearchForm((prev) => ({
+      ...prev,
       pay: value,
-    });
+    }));
   };
   // 状态记录
   const handleStatusChange = (value: string) => {
-    setSearchForm({
-      ...searchForm,
+    setSearchForm((prev) => ({
+      ...prev,
       status: value,
-    });
+    }));
   };
   // 日期数据就
   const handleDatepickerChange = (values: any, dateString: DatePickerType) => {
     setDateValues(values);
-    setSearchForm({
-      ...searchForm,
-      dates: dateString as any,
-    });
+    setSearchForm((prev) => ({
+      ...prev,
+      dates: dateString as [string, string],
+    }));
   };
   const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
-    // debugger;
     console.log("selectedRowKeys changed: ", newSelectedRowKeys);
-    setSelectedRowKeys(newSelectedRowKeys);
+    setSelectedRowKeys(() => newSelectedRowKeys);
   };
 
   const rowSelection: TableRowSelection<DataType> = {
@@ -211,12 +222,24 @@ const Orders: React.FC = memo(() => {
   };
 
   const pageOnChange = (pageNum: number, pageSize: number) => {
-    setPagination({
-      ...pagination,
+    setPagination((prev: Ipage) => ({
+      ...prev,
       pageNum,
-      pageSize
-    })
-    setCurrentParamsForDatas({ pageNum, pageSize});
+      pageSize,
+    }));
+  };
+  const handleBatchDeleteDatas = () => {
+    message.success("删除成功！");
+  };
+
+  const confirm: PopconfirmProps["onConfirm"] = (e) => {
+    console.log(e);
+    handleBatchDeleteDatas();
+  };
+
+  const cancel: PopconfirmProps["onCancel"] = (e) => {
+    console.log(e);
+    message.info("取消删除！");
   };
   useEffect(() => {
     // getOrderManDatas();
@@ -271,6 +294,7 @@ const Orders: React.FC = memo(() => {
                 placeholder="请选择支付方式"
                 value={searchForm.pay}
                 options={[
+                  { value: "全部", label: "全部" },
                   { value: "支付宝", label: "支付宝" },
                   { value: "微信", label: "微信" },
                   { value: "储值卡", label: "储值卡" },
@@ -305,12 +329,25 @@ const Orders: React.FC = memo(() => {
             },
           }}
         >
-          <Button color="danger" variant="solid">
-            批量删除
-          </Button>
+          <Popconfirm
+            title="提示"
+            description="您确定要对选中的数据进行批量删除吗?"
+            onConfirm={confirm}
+            onCancel={cancel}
+            disabled={selectedRowKeys.length <= 0}
+            okText="确定"
+            cancelText="取消"
+          >
+            <Button
+              disabled={selectedRowKeys.length <= 0}
+              color="danger"
+              variant="solid"
+            >
+              批量删除
+            </Button>
+          </Popconfirm>
         </Card>
         <Card
-          loading={loading}
           styles={{
             body: {
               ...setting.boxShadow,
@@ -320,6 +357,7 @@ const Orders: React.FC = memo(() => {
         >
           <Table<DataType>
             size="middle"
+            loading={loading}
             style={{ width: "auto", flex: 1 }}
             scroll={{ x: "max-content" }}
             pagination={{
@@ -330,7 +368,7 @@ const Orders: React.FC = memo(() => {
             }}
             rowSelection={rowSelection}
             columns={currentColumns}
-            dataSource={tableDataSource}
+            dataSource={result}
           />
         </Card>
       </Flex>

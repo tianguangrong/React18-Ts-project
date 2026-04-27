@@ -1,14 +1,16 @@
 import React, { useCallback, useState, useRef } from "react";
 import { httpGet, httpPost } from "../utils/axios";
+import type { AxiosResponse } from "axios";
 
 type RequestType = "Post" | "Get";
-interface IresponseType<T> {
+interface IresponseType<T> extends AxiosResponse {
   code: number;
   data: {
     list: T;
     total: number;
   };
 }
+
 interface Iparams {
   pageNum: number;
   pageSize: number;
@@ -20,17 +22,9 @@ interface Ipage {
   pageSize: number;
   total: number;
 }
-const useFetch: (p1: string, p2: RequestType, p3?: FixParamsType) => any[] = (
-  curApi,
-  method,
-  params = {},
-) => {
-  const curApiRef = useRef<string>(curApi);
-  const methodRef = useRef<RequestType>(method);
-  const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<IresponseType<any[]> | undefined>(
-    undefined,
-  );
+function useFetch<U = Record<string, string | number | boolean | number[] | string[] | object>>(curApi: string, method: RequestType): any {
+  const [loading, setLoading] = useState<boolean>(false);
+  const [result, setResult] = useState<U[]>([]);
   const [paramsConfig, setParamsConfig] = useState<FixParamsType | object>({});
   const [pagination, setPagination] = useState<Ipage>({
     pageNum: 1,
@@ -38,69 +32,60 @@ const useFetch: (p1: string, p2: RequestType, p3?: FixParamsType) => any[] = (
     total: 0,
   });
   const latestResultRef = useRef(result);
-  const setCurrentParamsForDatas = (newParams: any = null) => {
+  const setCurrentParamsForDatas = (newParams: Record<string, string | number> | undefined = undefined) => {
     if (newParams) setParamsConfig(newParams);
   };
-  const getDatas = useCallback(async (queryParams) => {
-    setLoading(() => true);
-    try {
-      if (methodRef.current === "Get") {
-        const { code, data } = (await httpGet(curApiRef.current)) as any;
+  const getDatas = useCallback(
+    async (queryParams: Record<string, string | number>) => {
+      setLoading(() => true);
+      try {
+        let requestLink;
+        if (method === "Get") {
+          requestLink = httpGet;
+        } else {
+          requestLink = httpPost;
+        }
+        const { code, data } = (await requestLink(
+          curApi,
+          queryParams || {},
+        )) as IresponseType<U[]>;
         setLoading(() => false);
         console.log(code, data);
         if (code === 200) {
-          const list = data.list.map((item: any, index: number) => ({
+          const list = data.list.map<U>((item: U, index: number) => ({
             ...item,
             index: index + 1,
+            key: index + 1,
           }));
           setResult(list);
-          setPagination({
-            ...pagination,
+          setPagination((prev) => ({
+            ...prev,
             total: data.total,
-          });
+          }));
           latestResultRef.current = list;
         } else {
-          setResult(undefined);
-          latestResultRef.current = undefined;
+          setResult([]);
+          latestResultRef.current = [];
         }
-      } else {
-        console.log("当前的参数为-->", queryParams);
-        const { code, data } = (await httpPost(
-          curApiRef.current,
-          queryParams,
-        )) as any;
+      } catch (error) {
         setLoading(() => false);
-        console.log(code, data);
-        if (code === 200) {
-          const list = data.list.map((item: any, index: number) => ({
-            ...item,
-            index: index + 1,
-          }));
-          setResult(list);
-          setPagination({
-            ...pagination,
-            total: data.total,
-          });
-          latestResultRef.current = list;
-        } else {
-          setResult(undefined);
-          latestResultRef.current = undefined;
-        }
+        setResult([]);
+        console.error(error);
+        latestResultRef.current = [];
       }
-    } catch (error) {
-      setLoading(() => false);
-      setResult(undefined);
-      console.error(error);
-      latestResultRef.current = undefined;
-    }
-  }, []);
+    },
+    [curApi, method],
+  );
 
   React.useEffect(() => {
-    debugger
-    // pageSize: pagination.pageSize, pageNum: pagination.pageNum
-    getDatas({ ...params, ...paramsConfig,  });
-    // pagination.pageSize, pagination.pageNum
-  }, [params, paramsConfig, ]);
+    const queryParams = {
+      pageSize: pagination.pageSize,
+      pageNum: pagination.pageNum,
+      ...paramsConfig,
+    };
+    console.log("queryParams", queryParams);
+    getDatas(queryParams);
+  }, [getDatas, paramsConfig, pagination.pageSize, pagination.pageNum]);
 
   return [
     result,
@@ -110,6 +95,6 @@ const useFetch: (p1: string, p2: RequestType, p3?: FixParamsType) => any[] = (
     loading,
     latestResultRef,
   ];
-};
+}
 
 export default useFetch;
