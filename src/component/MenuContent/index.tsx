@@ -1,118 +1,178 @@
-import React, { useEffect, useState, useTransition } from 'react'
-import { Layout, Menu,  } from 'antd';
-import menuStyle from './index.module.scss'
+import React, { useEffect, useState, useTransition } from "react";
+import { Layout, Menu } from "antd";
+import menuStyle from "./index.module.scss";
 const { Sider } = Layout;
-import classNames from 'classnames';
-import { findCurrentRouteObjectByuseLocation } from '../../utils'
-import { type SetStateAction } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import type { IUserType, NavStateType } from '../../types';
-import { useLocation, useNavigate } from 'react-router-dom';
-import routeList from '../../routes/list';
-import { updateCurrentActivePathname, addToNavStack } from '../../store/slices/navSlice';
-import { useTheme } from '../../utils/ThemeProvider';
-import global from '@/globalSetting.ts';
-
+import classNames from "classnames";
+import { findCurrentRouteObjectByuseLocation } from "../../utils";
+import { type SetStateAction } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import type { IUserType, NavStateType } from "../../types";
+import { useLocation, useNavigate } from "react-router-dom";
+import routeList from "../../routes/list";
+import {
+  updateCurrentActivePathname,
+  addToNavStack,
+} from "../../store/slices/navSlice";
+import { useTheme } from "../../utils/ThemeProvider";
+import global from "@/globalSetting.ts";
+type MenuType = { name: string; url: string; hidden: boolean };
 const resetRouterList = (list: object[], flag?: boolean): object[] => {
-  const originList = routeList && routeList[1].children || [];
-  
+  const originList = (routeList && routeList[1].children) || [];
   const result = list.map((item: any) => {
-      const url = item.url.split('/')[1];
-     const targetRouterList = originList.map(item => {
-      if (item.path.includes(url)) {
-        return item
-      }
-     }).filter(Boolean)
-    
-      Object.assign(item, {
-        key: item.url,
-        label: item.name,
-        icon: flag && targetRouterList[0]?.icon
-      });
-      if (Object.prototype.hasOwnProperty.call(item, 'children')) {
-        resetRouterList(item.children, false)
-      }
-      return item;
-  })
+    const url = item.url.split("/")[1];
+    const targetRouterList = originList
+      .map((item) => {
+        const { path } = item;
+        if (path.includes(url)) {
+          return item;
+        }
+      })
+      .filter(Boolean);
 
- return result
-}
+    Object.assign(item, {
+      key: item.url,
+      label: item.name,
+      icon: flag && targetRouterList[0]?.icon,
+    });
+    if (Object.prototype.hasOwnProperty.call(item, "children")) {
+      resetRouterList(item.children, false);
+    }
+    return item;
+  });
+
+  return result;
+};
 function MenuComent() {
-  const { theme } = useTheme()
-  const {datas = {}} = useSelector((state:IUserType) => state.user);
-   const { currentActivePath } = useSelector((state:{
-      nav: NavStateType
-    }) => state.nav)
-  const [ routerList, setRouterList ] = useState<SetStateAction<any> | null>(null);
+  const { theme } = useTheme();
+  const { datas = {} } = useSelector((state: IUserType) => state.user);
+  const { currentActivePath } = useSelector(
+    (state: { nav: NavStateType }) => state.nav,
+  );
+  const [routerList, setRouterList] = useState<SetStateAction<any> | null>(
+    null,
+  );
   const { pathname } = useLocation();
-  
-  const [ activePath, setActivePath ] = useState('')
-  const [isPending, startTransition ] = useTransition()
-  const navigate = useNavigate()
-  const dispatch = useDispatch()
+
+  const [activePath, setActivePath] = useState("");
+  const [isPending, startTransition] = useTransition();
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
   // 通过useLocation()获取当前路由对象
   useEffect(() => {
     if (datas) {
       const { homeRouteList = [] } = datas;
-      const newRouterList = resetRouterList(structuredClone(homeRouteList), true)
+      const newRouterList = resetRouterList(
+        structuredClone(homeRouteList),
+        true,
+      );
       startTransition(() => {
-        setRouterList(newRouterList)
+        console.log("newRouterList====", newRouterList);
+        const takeAllowForMenuToList = (datas: any) => {
+          return datas.filter((item) => {
+            if (item.hidden) {
+              return false;
+            }
+            if (item.children) {
+              item.children = takeAllowForMenuToList(item.children);
+            }
+            return true;
+          });
+        };
+        const result = takeAllowForMenuToList(newRouterList);
+        console.log("result", result);
+
+        setRouterList(result);
       });
-      const currentActivePathname = pathname.split('root')[1] + '' || '/dashboard';
-      const curtPathObject = findCurrentRouteObjectByuseLocation(newRouterList, currentActivePathname)
-      
-      
-      setActivePath(currentActivePathname);
-      dispatch(updateCurrentActivePathname({path: curtPathObject.url, label: curtPathObject.name}))
-      dispatch(addToNavStack({path: curtPathObject.url, label: curtPathObject.name}))
+      const currentActivePathname =
+        pathname.split("root")[1] + "" || "/dashboard";
+      console.log(newRouterList);
+
+      const curtPathObject = findCurrentRouteObjectByuseLocation(
+        structuredClone(homeRouteList),
+        currentActivePathname,
+      );
+      if (curtPathObject) {
+        setActivePath(currentActivePathname);
+        dispatch(
+          updateCurrentActivePathname({
+            path: curtPathObject.url,
+            label: curtPathObject.name,
+          }),
+        );
+        dispatch(
+          addToNavStack({
+            path: curtPathObject.url,
+            label: curtPathObject.name,
+          }),
+        );
+      }
     }
-  }, [])
+  }, []);
   useEffect(() => {
     if (currentActivePath.path) {
       setActivePath(currentActivePath.path);
     }
-  }, [currentActivePath])
-  const handleSelect = (keys: any) => {
-    const currentPath = keys.key.slice(1)
+  }, [currentActivePath]);
+  const handleSelectToNewPage = (keys: any) => {
+    const currentPath = keys.key.slice(1);
     const { homeRouteList = [] } = datas;
-    const curtPathObject = findCurrentRouteObjectByuseLocation(homeRouteList, keys.key)
-    dispatch(updateCurrentActivePathname({path: curtPathObject.url, label: curtPathObject.name}))
-    dispatch(addToNavStack({path: curtPathObject.url, label: curtPathObject.name}))
+    const curtPathObject = findCurrentRouteObjectByuseLocation(
+      homeRouteList,
+      keys.key,
+    );
+    dispatch(
+      updateCurrentActivePathname({
+        path: curtPathObject.url,
+        label: curtPathObject.name,
+      }),
+    );
+    dispatch(
+      addToNavStack({ path: curtPathObject.url, label: curtPathObject.name }),
+    );
     setActivePath(keys?.key);
     navigate(currentPath);
-    
-  }
+  };
   return (
     <Sider
-        breakpoint="lg"
-        collapsedWidth="0"
-        onBreakpoint={(broken) => {
-            console.log(broken);
-        }}
-        onCollapse={(collapsed, type) => {
-            console.log(collapsed, type);
-        }}
-        >
-    <div className={classNames(menuStyle['demo-logo-vertical'], menuStyle[`theme-${theme}`])}>
-        <h2 className={classNames(menuStyle['logo-content'])}>
-          <img className={menuStyle['logo']} src="http://www.sinopecgroup.com/r/cms/jtyw/default/images/indexfootlogo.png" alt="" />
-          {global.title}</h2>
-    </div>
-    {
-      !isPending ?
-      <Menu
-      style={{height: '100%'}}
-        onSelect={handleSelect}
-        theme={theme}
-        mode="inline"
-        defaultSelectedKeys={[activePath]}
-        selectedKeys={[activePath]}
-        items={routerList} /> :
-      <div style={{color: 'white', padding: '0 12px'}}>Menu Loading...</div>
-    }
-    
+      breakpoint="lg"
+      collapsedWidth="0"
+      onBreakpoint={(broken) => {
+        console.log(broken);
+      }}
+      onCollapse={(collapsed, type) => {
+        console.log(collapsed, type);
+      }}
+    >
+      <div
+        className={classNames(
+          menuStyle["demo-logo-vertical"],
+          menuStyle[`theme-${theme}`],
+        )}
+      >
+        <h2 className={classNames(menuStyle["logo-content"])}>
+          <img
+            className={menuStyle["logo"]}
+            src="http://www.sinopecgroup.com/r/cms/jtyw/default/images/indexfootlogo.png"
+            alt=""
+          />
+          {global.title}
+        </h2>
+      </div>
+      {!isPending ? (
+        <Menu
+          style={{ height: "100%" }}
+          onSelect={handleSelectToNewPage}
+          theme={theme}
+          mode="inline"
+          defaultSelectedKeys={[activePath]}
+          selectedKeys={[activePath]}
+          items={routerList}
+        />
+      ) : (
+        <div style={{ color: "white", padding: "0 12px" }}>Menu Loading...</div>
+      )}
     </Sider>
-  )
+  );
 }
 
-export default MenuComent
+export default MenuComent;

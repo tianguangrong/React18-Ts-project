@@ -29,6 +29,7 @@ import type { Dayjs } from "dayjs";
 import type { TableColumnsType, TableProps } from "antd";
 import { httpPost } from "../../utils/axios";
 import useFetch from "../../hooks/useFetch";
+import { useNavigate } from "react-router-dom";
 
 type TableRowSelection<T extends object = object> =
   TableProps<T>["rowSelection"];
@@ -88,6 +89,7 @@ const payLabelByStatus = (value: number): any => {
 };
 
 const Orders: React.FC = memo(() => {
+  const navigate = useNavigate();
   const blankSearchParam = useMemo(
     () => ({
       orderNum: "",
@@ -129,7 +131,9 @@ const Orders: React.FC = memo(() => {
         render: (_, row: any) => {
           return (
             <Space size="middle">
-              <Button color="primary" variant="text" onClick={() => {}}>
+              <Button color="primary" variant="text" onClick={() => {
+                navigate('/root/operations/detail', {replace: false});
+              }}>
                 详情
               </Button>
               <Popconfirm
