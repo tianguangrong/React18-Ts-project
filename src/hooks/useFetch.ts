@@ -22,7 +22,9 @@ interface Ipage {
   pageSize: number;
   total: number;
 }
-function useFetch<U = Record<string, string | number | boolean | number[] | string[] | object>>(curApi: string, method: RequestType): any {
+function useFetch<
+  U = Record<string, string | number | boolean | number[] | string[] | object>,
+>(curApi: string, method: RequestType, initParams?: Record<string, any>): any {
   const [loading, setLoading] = useState<boolean>(false);
   const [result, setResult] = useState<U[]>([]);
   const [paramsConfig, setParamsConfig] = useState<FixParamsType | object>({});
@@ -32,7 +34,9 @@ function useFetch<U = Record<string, string | number | boolean | number[] | stri
     total: 0,
   });
   const latestResultRef = useRef(result);
-  const setCurrentParamsForDatas = (newParams: Record<string, string | number> | undefined = undefined) => {
+  const setCurrentParamsForDatas = (
+    newParams: Record<string, string | number> | undefined = undefined,
+  ) => {
     if (newParams) setParamsConfig(newParams);
   };
   const getDatas = useCallback(
@@ -50,19 +54,23 @@ function useFetch<U = Record<string, string | number | boolean | number[] | stri
           queryParams || {},
         )) as IresponseType<U[]>;
         setLoading(() => false);
-        console.log(code, data);
         if (code === 200) {
-          const list = data.list.map<U>((item: U, index: number) => ({
-            ...item,
-            index: index + 1,
-            key: index + 1,
-          }));
-          setResult(list);
+          if (Array.isArray(data.list)) {
+            const list = data.list.map<U>((item: U, index: number) => ({
+              ...item,
+              index: index + 1,
+              key: index + 1,
+            }));
+            setResult(list);
+            latestResultRef.current = list;
+          } else {
+            setResult([data.list]);
+            latestResultRef.current = [data.list];
+          }
           setPagination((prev) => ({
             ...prev,
             total: data.total,
           }));
-          latestResultRef.current = list;
         } else {
           setResult([]);
           latestResultRef.current = [];
@@ -78,23 +86,40 @@ function useFetch<U = Record<string, string | number | boolean | number[] | stri
   );
 
   React.useEffect(() => {
-    const queryParams = {
-      pageSize: pagination.pageSize,
-      pageNum: pagination.pageNum,
-      ...paramsConfig,
-    };
+    let queryParams = {};
+    if (initParams) {
+      queryParams = {
+        pageSize: pagination.pageSize,
+        pageNum: pagination.pageNum,
+        ...initParams,
+        ...paramsConfig,
+      };
+    } else {
+      queryParams = {
+        pageSize: pagination.pageSize,
+        pageNum: pagination.pageNum,
+        ...paramsConfig,
+      };
+    }
+
     console.log("queryParams", queryParams);
     getDatas(queryParams);
-  }, [getDatas, paramsConfig, pagination.pageSize, pagination.pageNum]);
+  }, [
+    getDatas,
+    initParams,
+    paramsConfig,
+    pagination.pageSize,
+    pagination.pageNum,
+  ]);
 
-  return [
+  return {
     result,
     pagination,
     setPagination,
     setCurrentParamsForDatas,
     loading,
     latestResultRef,
-  ];
+  };
 }
 
 export default useFetch;

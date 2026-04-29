@@ -21,15 +21,15 @@ import {
   Popconfirm,
   message,
   type PopconfirmProps,
+  type TableColumnsType,
+  type TableProps,
 } from "antd";
 import { QuestionCircleOutlined } from "@ant-design/icons";
 import curStyle from "./index.module.scss";
 import setting from "../../globalSetting";
 import type { Dayjs } from "dayjs";
-import type { TableColumnsType, TableProps } from "antd";
-import { httpPost } from "../../utils/axios";
 import useFetch from "../../hooks/useFetch";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 type TableRowSelection<T extends object = object> =
   TableProps<T>["rowSelection"];
@@ -73,12 +73,12 @@ const columns: TableColumnsType<DataType> = [
   { title: "支付方式", dataIndex: "pay", key: "pay" },
 ];
 
-const payLabelByStatus = (value: number): any => {
+const payLabelByStatus = (value: string): any => {
   const current = statusOptions.find((item) => item.value === value);
   if (current?.label) {
     return (
       <Tag
-        color={value === 1 ? "green" : value === 2 ? "red" : "blue"}
+        color={+value === 1 ? "green" : +value === 2 ? "red" : "blue"}
         bordered={false}
       >
         {current.label}
@@ -104,16 +104,19 @@ const Orders: React.FC = memo(() => {
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [searchForm, setSearchForm] =
     useState<typeof blankSearchParam>(blankSearchParam);
+  const [searchParams, setSearchParams] = useSearchParams()
 
-  const [
+  const {
     result,
     pagination,
     setPagination,
     setCurrentParamsForDatas,
     loading,
     latestResultRef,
-  ] = useFetch<DataType>("/api/orderList", "Post");
-
+  } = useFetch<DataType>("/api/orderList", "Post");
+  const handleJumpToDetail = (orderNo:string) => {
+    navigate(`/root/operations/detail?orderNo=${orderNo}`);
+  };
   // table 每行数据内容
   const currentColumns: TableProps<DataType>["columns"] = useMemo(() => {
     return [
@@ -131,9 +134,11 @@ const Orders: React.FC = memo(() => {
         render: (_, row: any) => {
           return (
             <Space size="middle">
-              <Button color="primary" variant="text" onClick={() => {
-                navigate('/root/operations/detail', {replace: false});
-              }}>
+              <Button
+                color="primary"
+                variant="text"
+                onClick={() => handleJumpToDetail(row.orderNo)}
+              >
                 详情
               </Button>
               <Popconfirm

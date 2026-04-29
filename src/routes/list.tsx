@@ -17,7 +17,7 @@ const Equipment = React.lazy(() => import('../views/Equipment'))
 const InvestmentManagement = React.lazy(() => import('../views/InvestmentManagement'))
 const System = React.lazy(() => import('../views/System'))
 const Orders = React.lazy(() => import('../views/Orders'))
-const Detail = React.lazy(() => import('../views/Detail'))
+const Detail = React.lazy(() => import('../views/OrderDetail'))
 const Total = React.lazy(() => import('../views/Total'))
 import {
     FundTwoTone,
