@@ -200,11 +200,12 @@ const Orders: React.FC = memo(() => {
     formateParamsAndRequest()
   };
   
-  const formateParamsAndRequest = () => {
+  const formateParamsAndRequest = (params:any = {}) => {
     const formatSearchForm: Record<string, any> = {
       ...searchForm,
       startDate: searchForm.dates[0],
       endDate: searchForm.dates[1],
+      ...params
     };
     delete formatSearchForm.dates;
     requestCurrentDatasByApi(formatSearchForm);
@@ -251,7 +252,9 @@ const Orders: React.FC = memo(() => {
       pageNum,
       pageSize,
     }));
-    formateParamsAndRequest();
+    formateParamsAndRequest({
+      pageNum,
+      pageSize,});
   };
 
   const handleBatchDeleteDatas = () => {
