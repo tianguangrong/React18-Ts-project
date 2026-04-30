@@ -53,7 +53,7 @@ const NavContent: React.FC = () => {
     if (fullPathName) {
       const key = fullPathName.split("root")[1];
       const curPath = findCurrentRouteObjectByuseLocation(homeRouteList, key);
-      if (!curPath.hidden) {
+      if (curPath && !curPath.hidden) {
         const curIndex = navStacks.findIndex(
           (item) => item.path === curPath.url,
         );
@@ -84,7 +84,7 @@ const NavContent: React.FC = () => {
   const onChange = (key: string) => {
     const path = key.slice(1);
     const curPath = findCurrentRouteObjectByuseLocation(homeRouteList, key);
-    if (!curPath.hidden) {
+    if (curPath && !curPath.hidden) {
       dispatch(
         updateCurrentActivePathname({ path: curPath.url, label: curPath.name }),
       );

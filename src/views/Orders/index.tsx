@@ -102,21 +102,25 @@ const Orders: React.FC = memo(() => {
   );
   const [dateValues, setDateValues] = useState<any>([]);
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
-  const [searchForm, setSearchForm] =
-    useState<typeof blankSearchParam>(blankSearchParam);
-  const [searchParams, setSearchParams] = useSearchParams()
+  const [searchForm, setSearchForm] = useState<typeof blankSearchParam>(blankSearchParam);
 
   const {
     result,
     pagination,
     setPagination,
-    setCurrentParamsForDatas,
+    requestCurrentDatasByApi,
     loading,
     latestResultRef,
   } = useFetch<DataType>("/api/orderList", "Post");
+
   const handleJumpToDetail = (orderNo:string) => {
-    navigate(`/root/operations/detail?orderNo=${orderNo}`);
+    navigate(`/root/operations/detail?orderNo=${orderNo}`, {
+      state: {
+        ...searchForm
+      }
+    });
   };
+
   // table 每行数据内容
   const currentColumns: TableProps<DataType>["columns"] = useMemo(() => {
     return [
@@ -159,6 +163,7 @@ const Orders: React.FC = memo(() => {
       },
     ];
   }, []);
+
   // 订单编号数据记录
   const orderNumberChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     setSearchForm({
@@ -166,6 +171,7 @@ const Orders: React.FC = memo(() => {
       orderNum: e.target.value,
     });
   };
+
   // 订单编号数据记录
   const deviceNumberChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     setSearchForm({
@@ -173,13 +179,13 @@ const Orders: React.FC = memo(() => {
       equipmentNo: e.target.value,
     });
   };
+
   // 重置数据
   const handleResetForms = () => {
     setDateValues(null);
     setSearchForm({
       ...blankSearchParam,
     });
-    setCurrentParamsForDatas({});
     setPagination(() => {
       return {
         pageSize: 10,
@@ -187,17 +193,23 @@ const Orders: React.FC = memo(() => {
         total: 0,
       };
     });
+    formateParamsAndRequest()
   };
+
   const handleSearchForms = () => {
+    formateParamsAndRequest()
+  };
+  
+  const formateParamsAndRequest = () => {
     const formatSearchForm: Record<string, any> = {
       ...searchForm,
       startDate: searchForm.dates[0],
       endDate: searchForm.dates[1],
     };
     delete formatSearchForm.dates;
-    setCurrentParamsForDatas({ ...formatSearchForm });
-    console.log("latestResultRef", latestResultRef);
-  };
+    requestCurrentDatasByApi(formatSearchForm);
+  }
+
   // 站点名称记录
   const handlePayTypeChange = (value: string): void => {
     setSearchForm((prev) => ({
@@ -205,6 +217,7 @@ const Orders: React.FC = memo(() => {
       pay: value,
     }));
   };
+
   // 状态记录
   const handleStatusChange = (value: string) => {
     setSearchForm((prev) => ({
@@ -212,6 +225,7 @@ const Orders: React.FC = memo(() => {
       status: value,
     }));
   };
+
   // 日期数据就
   const handleDatepickerChange = (values: any, dateString: DatePickerType) => {
     setDateValues(values);
@@ -220,6 +234,7 @@ const Orders: React.FC = memo(() => {
       dates: dateString as [string, string],
     }));
   };
+
   const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
     console.log("selectedRowKeys changed: ", newSelectedRowKeys);
     setSelectedRowKeys(() => newSelectedRowKeys);
@@ -236,7 +251,9 @@ const Orders: React.FC = memo(() => {
       pageNum,
       pageSize,
     }));
+    formateParamsAndRequest();
   };
+
   const handleBatchDeleteDatas = () => {
     message.success("删除成功！");
   };
@@ -250,9 +267,11 @@ const Orders: React.FC = memo(() => {
     console.log(e);
     message.info("取消删除！");
   };
+
   useEffect(() => {
-    // getOrderManDatas();
+    requestCurrentDatasByApi();
   }, []);
+
   return (
     <div className={curStyle["current-container"]}>
       <Flex vertical={true} gap={"small"}>

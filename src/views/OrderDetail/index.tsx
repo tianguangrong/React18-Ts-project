@@ -25,7 +25,12 @@ import {
 import curStyle from "./index.module.scss";
 import setting from "../../globalSetting";
 import useFetch from "../../hooks/useFetch";
-import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import {
+  useNavigate,
+  useParams,
+  useSearchParams,
+  useLocation,
+} from "react-router-dom";
 
 interface IcurDatasType {
   id: string;
@@ -38,7 +43,7 @@ interface IcurDatasType {
   money: number;
   pay: string;
   city: string;
-  status: number;
+  status: string;
   capacity: string;
   chargeEquipment: string;
   totalHours: string;
@@ -47,30 +52,67 @@ interface IcurDatasType {
 
 const OrderDetail: React.FC = () => {
   const navigate = useNavigate();
-  // const { orderNo } = useParams();
+  const location = useLocation();
+  // 获取点击前订单管理页面的查询条件
+  const ordersStateRef= useRef(null)
+
   const [searchParams] = useSearchParams();
-  const [curData, setCurData] = useState<IcurDatasType| null>(null);
-  const initParam = useMemo(() => ({ orderNo: searchParams.get("orderNo") }), []);
+  const [curData, setCurData] = useState<IcurDatasType | null>(null);
+  const initParam = useMemo(
+    () => ({ orderNo: searchParams.get("orderNo") }),
+    [],
+  );
   const { result, loading } = useFetch<IcurDatasType>(
     "/api/orderDetail",
     "Post",
     initParam,
   );
+  const statusOptions = [
+    { value: "全部", label: "全部" },
+    { value: "1", label: "进行中" },
+    { value: "2", label: "异常中" },
+    { value: "3", label: "已完成" },
+  ];
+  const payLabelByStatus = (value: string): any => {
+    if (!value) return "未知";
+    const current = statusOptions.find((item) => item.value === value);
+    if (current?.label) {
+      return (
+        <Tag
+          color={+value === 1 ? "green" : +value === 2 ? "red" : "blue"}
+          bordered={false}
+        >
+          {current.label}
+        </Tag>
+      );
+    }
+  };
   useEffect(() => {
-    console.log(result);
-    const newData = result[0];
-    setCurData(() => ({
-      ...newData,
-    }));
+    if (result) {
+      const newData = result[0];
+      setCurData(() => ({
+        ...newData,
+      }));
+    }
   }, [result]);
-
+  useEffect(() => {
+    if (location) {
+      console.log("location", location.state);
+      ordersStateRef.current = location.state;
+    }
+  }, [location]);
+  const gobackToOrders = () => {
+    navigate("/root/operations/orders", {
+      state: ordersStateRef.current
+    })
+  }
   return (
     <div className={curStyle["current-container"]}>
       <Flex vertical={true} gap={"small"}>
         <Flex justify="flex-end">
           <Button
             type="primary"
-            onClick={() => navigate("/root/operations/orders")}
+            onClick={ gobackToOrders }
           >
             返回
           </Button>
@@ -147,6 +189,23 @@ const OrderDetail: React.FC = () => {
                 <Col span={8}>
                   <span>充电总时长(h)：</span>
                   <span>{curData?.totalHours}</span>
+                </Col>
+              </Flex>
+
+              <Flex>
+                <Col span={8}>
+                  <span>支付方式：</span>
+                  <span>
+                    <Tag color="green">{curData?.pay}</Tag>
+                  </span>
+                </Col>
+                <Col span={8}>
+                  <span>订单状态：</span>
+                  <span>{payLabelByStatus(curData?.status ?? "")}</span>
+                </Col>
+                <Col span={8}>
+                  <span>充电总金额(元)：</span>
+                  <span>{curData?.money}</span>
                 </Col>
               </Flex>
               <Flex>

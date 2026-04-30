@@ -27,18 +27,17 @@ function useFetch<
 >(curApi: string, method: RequestType, initParams?: Record<string, any>): any {
   const [loading, setLoading] = useState<boolean>(false);
   const [result, setResult] = useState<U[]>([]);
-  const [paramsConfig, setParamsConfig] = useState<FixParamsType | object>({});
   const [pagination, setPagination] = useState<Ipage>({
     pageNum: 1,
     pageSize: 10,
     total: 0,
   });
   const latestResultRef = useRef(result);
-  const setCurrentParamsForDatas = (
-    newParams: Record<string, string | number> | undefined = undefined,
-  ) => {
-    if (newParams) setParamsConfig(newParams);
-  };
+  // const setCurrentParamsForDatas = (
+  //   newParams: Record<string, string | number> | undefined = undefined,
+  // ) => {
+  //   if (newParams) setParamsConfig(newParams);
+  // };
   const getDatas = useCallback(
     async (queryParams: Record<string, string | number>) => {
       setLoading(() => true);
@@ -85,38 +84,48 @@ function useFetch<
     [curApi, method],
   );
 
-  React.useEffect(() => {
-    let queryParams = {};
-    if (initParams) {
-      queryParams = {
-        pageSize: pagination.pageSize,
-        pageNum: pagination.pageNum,
-        ...initParams,
-        ...paramsConfig,
-      };
-    } else {
-      queryParams = {
-        pageSize: pagination.pageSize,
-        pageNum: pagination.pageNum,
-        ...paramsConfig,
-      };
-    }
+  // React.useEffect(() => {
+  //   let queryParams = {};
+  //   if (initParams) {
+  //     queryParams = {
+  //       pageSize: pagination.pageSize,
+  //       pageNum: pagination.pageNum,
+  //       ...initParams,
+  //       ...paramsConfig,
+  //     };
+  //   } else {
+  //     queryParams = {
+  //       pageSize: pagination.pageSize,
+  //       pageNum: pagination.pageNum,
+  //       ...paramsConfig,
+  //     };
+  //   }
 
-    console.log("queryParams", queryParams);
+  //   console.log("queryParams", queryParams);
+  //   getDatas(queryParams);
+  // }, [
+  //   getDatas,
+  //   initParams,
+  //   paramsConfig,
+  //   pagination.pageSize,
+  //   pagination.pageNum,
+  // ]);
+  const requestCurrentDatasByApi = useCallback((params: any = {}) => {
+    
+    const queryParams = {
+      pageSize: pagination.pageSize,
+      pageNum: pagination.pageNum,
+      ...params,
+    };
+    console.log(queryParams);
+    debugger
     getDatas(queryParams);
-  }, [
-    getDatas,
-    initParams,
-    paramsConfig,
-    pagination.pageSize,
-    pagination.pageNum,
-  ]);
-
+  }, [pagination.pageSize,pagination.pageNum, getDatas]);
   return {
     result,
     pagination,
     setPagination,
-    setCurrentParamsForDatas,
+    requestCurrentDatasByApi,
     loading,
     latestResultRef,
   };
