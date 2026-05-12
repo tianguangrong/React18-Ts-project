@@ -62,10 +62,9 @@ const OrderDetail: React.FC = () => {
     () => ({ orderNo: searchParams.get("orderNo") }),
     [],
   );
-  const { result, loading } = useFetch<IcurDatasType>(
+  const { result, loading, requestCurrentDatasByApi } = useFetch<IcurDatasType>(
     "/api/orderDetail",
-    "Post",
-    initParam,
+    "Post"
   );
   const statusOptions = [
     { value: "全部", label: "全部" },
@@ -87,6 +86,15 @@ const OrderDetail: React.FC = () => {
       );
     }
   };
+  const formateParamsAndRequest = (params: any = {}) => {
+    const formatSearchForm: Record<string, string | number | object> = {
+      ...params,
+    };
+    requestCurrentDatasByApi(formatSearchForm);
+  };
+  useEffect(() => {
+    formateParamsAndRequest(initParam)
+  }, []);
   useEffect(() => {
     if (result) {
       const newData = result[0];

@@ -102,7 +102,8 @@ const Orders: React.FC = memo(() => {
   );
   const [dateValues, setDateValues] = useState<any>([]);
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
-  const [searchForm, setSearchForm] = useState<typeof blankSearchParam>(blankSearchParam);
+  const [searchForm, setSearchForm] =
+    useState<typeof blankSearchParam>(blankSearchParam);
 
   const {
     result,
@@ -113,11 +114,11 @@ const Orders: React.FC = memo(() => {
     latestResultRef,
   } = useFetch<DataType>("/api/orderList", "Post");
 
-  const handleJumpToDetail = (orderNo:string) => {
+  const handleJumpToDetail = (orderNo: string) => {
     navigate(`/root/operations/detail?orderNo=${orderNo}`, {
       state: {
-        ...searchForm
-      }
+        ...searchForm,
+      },
     });
   };
 
@@ -193,23 +194,26 @@ const Orders: React.FC = memo(() => {
         total: 0,
       };
     });
-    formateParamsAndRequest()
+    formateParamsAndRequest({
+      pageSize: 10,
+      pageNum: 1,
+    });
   };
 
   const handleSearchForms = () => {
-    formateParamsAndRequest()
+    formateParamsAndRequest();
   };
-  
-  const formateParamsAndRequest = (params:any = {}) => {
-    const formatSearchForm: Record<string, any> = {
+
+  const formateParamsAndRequest = (params: any = {}) => {
+    const formatSearchForm: Record<string, string | number | object> = {
       ...searchForm,
       startDate: searchForm.dates[0],
       endDate: searchForm.dates[1],
-      ...params
+      ...params,
     };
     delete formatSearchForm.dates;
     requestCurrentDatasByApi(formatSearchForm);
-  }
+  };
 
   // 站点名称记录
   const handlePayTypeChange = (value: string): void => {
@@ -254,7 +258,8 @@ const Orders: React.FC = memo(() => {
     }));
     formateParamsAndRequest({
       pageNum,
-      pageSize,});
+      pageSize,
+    });
   };
 
   const handleBatchDeleteDatas = () => {

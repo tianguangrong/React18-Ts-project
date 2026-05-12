@@ -2395,11 +2395,13 @@ const cityList = [
 ]
 
 //计费管理城市接口
-Mock.mock('https://www.demo.com/api/cityList', "get", () => {
+Mock.mock('https://www.demo.com/api/cityList', "post", (options: any) => {
   return {
     code: 200,
     message: "操作成功",
-    data: cityList
+    data: {
+      list:cityList
+    }
   }
 })
 

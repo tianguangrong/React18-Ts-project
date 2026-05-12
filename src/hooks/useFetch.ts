@@ -84,32 +84,7 @@ function useFetch<
     [curApi, method],
   );
 
-  // React.useEffect(() => {
-  //   let queryParams = {};
-  //   if (initParams) {
-  //     queryParams = {
-  //       pageSize: pagination.pageSize,
-  //       pageNum: pagination.pageNum,
-  //       ...initParams,
-  //       ...paramsConfig,
-  //     };
-  //   } else {
-  //     queryParams = {
-  //       pageSize: pagination.pageSize,
-  //       pageNum: pagination.pageNum,
-  //       ...paramsConfig,
-  //     };
-  //   }
-
-  //   console.log("queryParams", queryParams);
-  //   getDatas(queryParams);
-  // }, [
-  //   getDatas,
-  //   initParams,
-  //   paramsConfig,
-  //   pagination.pageSize,
-  //   pagination.pageNum,
-  // ]);
+  
   const requestCurrentDatasByApi = useCallback((params: any = {}) => {
     
     const queryParams = {
@@ -117,8 +92,6 @@ function useFetch<
       pageNum: pagination.pageNum,
       ...params,
     };
-    console.log(queryParams);
-    debugger
     getDatas(queryParams);
   }, [pagination.pageSize,pagination.pageNum, getDatas]);
   return {
