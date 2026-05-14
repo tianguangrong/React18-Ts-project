@@ -21,8 +21,10 @@ import {
   Tag,
   Popconfirm,
   message,
+  Form,
   Tree,
   Empty,
+  type FormProps,
   type TreeDataNode,
   type PopconfirmProps,
   type TableColumnsType,
@@ -33,9 +35,23 @@ import curStyle from "./index.module.scss";
 import setting from "../../globalSetting";
 import useFetch from "../../hooks/useFetch";
 import { useDebouncedValue } from "../../hooks/useDebouncedValue";
+import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
 
 const { Search } = Input;
+const { RangePicker } = DatePicker;
+const formatValue = "YYYY-MM-DD HH:mm:ss";
 
+type dateRangeType = {
+  dateValues: any[];
+  chargingFee: string;
+};
+interface FieldType<T> {
+  templateName: string;
+  serviceFee: string;
+  parkingFee: string;
+  mark: string;
+  timeRangeFee: T[];
+}
 const formateTreeDatas = (datas: any[], parentKey?: string) => {
   return datas.map<any>((item: any, index: number) => {
     const res = {
@@ -81,6 +97,8 @@ const Total: React.FC = () => {
   const originTreeDatas = useRef<TreeDataNode[]>([]);
   const dedouncedValue = useDebouncedValue(searchValue, 500);
   const usedeferredSearchValue = useDeferredValue(dedouncedValue);
+  const currentTreeNode = useRef<any>(null);
+  const [form] = Form.useForm();
 
   const { result, requestCurrentDatasByApi, loading } = useFetch(
     "/api/cityList",
@@ -127,15 +145,14 @@ const Total: React.FC = () => {
     setSearchValue(() => value);
   };
   const onCheck: TreeProps["onCheck"] = (checkedKeys, info) => {
-    // const cur = checkedKeys[0]
-    const {
-      checked,
-      node: { key },
-    } = info;
+    const { checked, node } = info;
     setCheckedKeys(() => {
       if (checked) {
-        return [key];
+        currentTreeNode.current = node;
+        form.setFieldValue("templateName", currentTreeNode.current.title);
+        return [node.key];
       }
+      currentTreeNode.current = null;
       return [];
     });
   };
@@ -148,8 +165,12 @@ const Total: React.FC = () => {
     if (!disableCheckbox) {
       setCheckedKeys((prev) => {
         if (prev.includes(key)) {
+          currentTreeNode.current = null;
           return [];
         }
+        currentTreeNode.current = info.node;
+        form.resetFields();
+        form.setFieldValue("templateName", currentTreeNode.current.title);
         return [key];
       });
     }
@@ -168,6 +189,15 @@ const Total: React.FC = () => {
       }
     });
     console.log("onSelect", selectedKeys, info);
+  };
+  const onFinish: FormProps<FieldType<dateRangeType>>["onFinish"] = async (
+    values,
+  ) => {
+    console.log("values", values);
+  };
+  const resetField = () => {
+    form.resetFields();
+    form.setFieldValue("templateName", currentTreeNode.current.title);
   };
   return (
     <Flex className={curStyle["current-container"]} vertical={false}>
@@ -214,11 +244,146 @@ const Total: React.FC = () => {
       </Flex>
       <Flex
         flex={1}
+        vertical
         style={{
           ...setting.boxShadow,
+          padding: "12px",
         }}
       >
-        2
+        <div className={curStyle["form-title"]}>
+          {/* <span>{currentTreeNode.current?.title}</span> */}
+          <span>计费模板</span>
+        </div>
+        <div className={curStyle["form-content"]}>
+          {currentTreeNode.current ? (
+            <Form
+              name="dynamic_form_nest_item"
+              form={form}
+              initialValues={{
+                templateName: "",
+                serviceFee: "0",
+                parkingFee: "0",
+                mark: "",
+                timeRangeFee: [
+                  {
+                    dateValues: [],
+                    chargingFee: "",
+                  },
+                ],
+              }}
+              style={{ maxWidth: 800 }}
+              autoComplete="off"
+              onFinish={onFinish}
+            >
+              <Form.Item
+                name="templateName"
+                label="模板名称"
+                rules={[{ required: true, message: "请输入模板名称" }]}
+              >
+                <Input readOnly placeholder="请输入模板名称" />
+              </Form.Item>
+              <Form.List name="timeRangeFee">
+                {(fields, { add, remove }) => (
+                  <>
+                    {fields.map(({ key, name, ...restField }, index) => (
+                      <Space
+                        key={key}
+                        style={{ display: "flex", marginBottom: 8 }}
+                        align="baseline"
+                      >
+                        <Form.Item
+                          {...restField}
+                          name={[name, "dateValues"]}
+                          label={"时间区间" + (index + 1)}
+                          rules={[
+                            { required: true, message: "请添加时间区间" },
+                          ]}
+                        >
+                          <RangePicker
+                            placeholder={["开始日期", "结束日期"]}
+                            allowClear
+                            style={{ maxWidth: 360 }}
+                            showTime
+                            format={formatValue}
+                          />
+                        </Form.Item>
+                        <Form.Item
+                          {...restField}
+                          label={"电费" + (index + 1)}
+                          name={[name, "chargingFee"]}
+                          rules={[
+                            {
+                              required: true,
+                              message: "请输入每度需要收取的费用",
+                            },
+                          ]}
+                        >
+                          <Input
+                            style={{ width: 260 }}
+                            placeholder="请输入每度需要收取的费用"
+                            suffix="元/每度"
+                          />
+                        </Form.Item>
+                        {index > 0 ? (
+                          <MinusCircleOutlined onClick={() => remove(name)} />
+                        ) : null}
+                      </Space>
+                    ))}
+                    <Form.Item>
+                      <Button
+                        type="primary"
+                        onClick={() => add()}
+                        icon={<PlusOutlined />}
+                      >
+                        添加时间区间
+                      </Button>
+                    </Form.Item>
+                  </>
+                )}
+              </Form.List>
+              <Form.Item
+                name="serviceFee"
+                label="服务费"
+                rules={[{ required: true, message: "请输入服务费" }]}
+              >
+                <Input
+                  style={{ width: "50%" }}
+                  placeholder="请输入服务费"
+                  suffix="元"
+                />
+              </Form.Item>
+              <Form.Item
+                name="parkingFee"
+                label="停车费"
+                rules={[{ required: true, message: "请输入停车费" }]}
+              >
+                <Input
+                  style={{ width: "50%" }}
+                  placeholder="请输入停车费"
+                  suffix="元"
+                />
+              </Form.Item>
+              <Form.Item name="mark" label="特殊备注">
+                <Input.TextArea placeholder="请输入..." />
+              </Form.Item>
+            </Form>
+          ) : (
+            <Empty style={{ marginTop: "20vh" }} description="暂无数据" />
+          )}
+        </div>
+        <Flex justify="flex-end" className={curStyle["form-submit"]}>
+          <Button
+            type="primary"
+            onClick={form.submit}
+            disabled={!currentTreeNode.current}
+          >
+            创建
+          </Button>
+          <span style={{ padding: "2px" }}></span>
+          <Button onClick={resetField} disabled={!currentTreeNode.current}>
+            重 置
+          </Button>
+        </Flex>
       </Flex>
     </Flex>
   );
